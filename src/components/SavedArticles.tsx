@@ -10,7 +10,13 @@ interface SavedArticle {
     title: string
     slug: { current: string }
     publishedAt: string
-    mainImage?: any
+    mainImage?: {
+        _type: 'image'
+        asset: {
+            _ref: string
+            _type: 'reference'
+        }
+    } | null
 }
 
 export default async function SavedArticles() {

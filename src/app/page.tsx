@@ -12,15 +12,16 @@ interface Post {
   slug: {
     current: string;
   };
-  publishedAt: string;
-  image?: any;
-  body?: any;
-}
-
-// Define the props interface for MedicalBlogUI
-interface MedicalBlogUIProps {
-  posts: Post[];
-  bookmarkedArticleIds: string[];
+  publishedAt?: string;
+  _createdAt?: string;
+  image?: {
+    _type: 'image';
+    asset: {
+      _ref: string;
+      _type: 'reference';
+    };
+  } | null;
+  body?: unknown[];
 }
 
 export const revalidate = 60 // Revalidate cache every 60 seconds

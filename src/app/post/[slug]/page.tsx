@@ -17,8 +17,13 @@ import { getBookmarks } from '@/lib/actions/user.actions'
 
 export const revalidate = 60
 
+interface Block {
+  _type: string
+  children?: { text?: string }[]
+}
+
 // Calculate reading time from portable text body
-function getReadingTime(body: any[]): number {
+function getReadingTime(body: Block[]): number {
   if (!body) return 1
   let wordCount = 0
   for (const block of body) {
@@ -123,7 +128,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
             {/* Social Share Sidebar */}
             <aside className="hidden lg:block">
               <div className="sticky top-20">
-                <SocialShareSidebar title={post.title} slug={slug} />
+                <SocialShareSidebar title={post.title} />
               </div>
             </aside>
 
@@ -148,7 +153,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
               <div className="lg:hidden mt-12 pt-8 border-t border-border">
                 <p className="text-sm font-medium text-muted-foreground mb-4">Share this article</p>
                 <div className="flex gap-3">
-                  <SocialShareSidebar title={post.title} slug={slug} />
+                  <SocialShareSidebar title={post.title} />
                 </div>
               </div>
             </article>

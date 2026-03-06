@@ -22,12 +22,6 @@ function FacebookIcon({ className }: { className?: string }) {
     )
 }
 
-interface BlogPostClientProps {
-    title: string
-    slug: string
-    readingTime: number
-}
-
 export function ReadingProgressBar() {
     const [progress, setProgress] = React.useState(0)
 
@@ -70,7 +64,7 @@ export function ReadingTimeBadge({ minutes }: { minutes: number }) {
     )
 }
 
-export function SocialShareSidebar({ title, slug }: { title: string; slug: string }) {
+export function SocialShareSidebar({ title }: { title: string }) {
     const [copied, setCopied] = React.useState(false)
     const [currentUrl, setCurrentUrl] = React.useState("")
 

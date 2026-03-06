@@ -1,22 +1,3 @@
-// import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server"
-
-// const isProtectedRoute = createRouteMatcher([
-//   "/dashboard(.*)",
-//   "/studio(.*)",
-// ])
-
-// export default clerkMiddleware(async (auth, req) => {
-//   if (isProtectedRoute(req)) await auth.protect()
-// })
-
-// export const config = {
-//   matcher: [
-//     "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
-//     "/(api|trpc)(.*)",
-//   ],
-// }
-
-
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server"
 import { NextResponse } from "next/server"
 
@@ -30,7 +11,8 @@ export default clerkMiddleware(async (auth, req) => {
 
   // 3. Protect the Studio (Admin Only)
   if (isStudioRoute(req)) {
-    const role = sessionClaims?.metadata?.role;
+    const metadata = (sessionClaims?.metadata ?? {}) as { role?: string | string[] };
+    const role = metadata.role;
     
     // Check if role is "admin" (handling both string or array format)
     const isAdmin = Array.isArray(role) ? role.includes("admin") : role === "admin";

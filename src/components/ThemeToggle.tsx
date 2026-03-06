@@ -11,7 +11,7 @@ export function ThemeToggle({
     duration = 500,
     ...props
 }: React.ComponentPropsWithoutRef<"button"> & { duration?: number }) {
-    const { theme, setTheme, resolvedTheme } = useTheme()
+    const { setTheme, resolvedTheme } = useTheme()
     const buttonRef = useRef<HTMLButtonElement>(null)
 
     const toggleTheme = useCallback(() => {
@@ -32,12 +32,12 @@ export function ThemeToggle({
             return
         }
 
-        const transition = (document as any).startViewTransition(() => {
+        const transition = (document as unknown as { startViewTransition: (cb: () => void) => { ready: Promise<void> } }).startViewTransition(() => {
             flushSync(applyTheme)
         })
 
         const ready = transition?.ready
-        if (ready && typeof ready.then === "function") {
+        if (ready) {
             ready.then(() => {
                 const button = buttonRef.current
                 if (!button) return

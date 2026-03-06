@@ -109,7 +109,7 @@ ConfettiComponent.displayName = "Confetti"
 // Export as Confetti
 export const Confetti = ConfettiComponent
 
-interface ConfettiButtonProps extends React.ComponentProps<"button"> {
+interface ConfettiButtonProps extends React.ComponentProps<typeof Button> {
     options?: ConfettiOptions &
     ConfettiGlobalOptions & { canvas?: HTMLCanvasElement }
 }
@@ -118,6 +118,8 @@ const ConfettiButtonComponent = ({
     options,
     children,
     onClick,
+    variant,
+    size,
     ...props
 }: ConfettiButtonProps) => {
     const handleClick = async (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -142,7 +144,7 @@ const ConfettiButtonComponent = ({
     }
 
     return (
-        <Button onClick={handleClick} {...props}>
+        <Button onClick={handleClick} variant={variant} size={size} {...props}>
             {children}
         </Button>
     )

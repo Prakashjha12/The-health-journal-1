@@ -1,42 +1,55 @@
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
+// import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server"
 
-export function middleware(request: NextRequest) {
-    const basicAuth = request.headers.get('authorization')
+// const isProtectedRoute = createRouteMatcher([
+//   "/dashboard(.*)",
+//   "/studio(.*)",
+// ])
 
-    if (basicAuth) {
-        const authValue = basicAuth.split(' ')[1]
-        const [user, pwd] = atob(authValue).split(':')
+// export default clerkMiddleware(async (auth, req) => {
+//   if (isProtectedRoute(req)) await auth.protect()
+// })
 
-        if (
-            user === process.env.ADMIN_USER &&
-            pwd === process.env.ADMIN_PASS
-        ) {
-            return NextResponse.next()
-        }
+// export const config = {
+//   matcher: [
+//     "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
+//     "/(api|trpc)(.*)",
+//   ],
+// }
+
+
+import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server"
+import { NextResponse } from "next/server"
+
+// 1. Define your protected routes
+const isDashboardRoute = createRouteMatcher(["/dashboard(.*)"])
+const isStudioRoute = createRouteMatcher(["/studio(.*)"])
+
+export default clerkMiddleware(async (auth, req) => {
+  // 2. Get the session claims (this contains your metadata)
+  const { sessionClaims } = await auth();
+
+  // 3. Protect the Studio (Admin Only)
+  if (isStudioRoute(req)) {
+    const role = sessionClaims?.metadata?.role;
+    
+    // Check if role is "admin" (handling both string or array format)
+    const isAdmin = Array.isArray(role) ? role.includes("admin") : role === "admin";
+
+    if (!isAdmin) {
+      // If not admin, kick them back to the home page
+      return NextResponse.redirect(new URL("/", req.url));
     }
+  }
 
-    return new NextResponse(
-        `<html>
-      <body style="font-family: system-ui, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; flex-direction: column; background: #fafafa; color: #18181b;">
-        <h1 style="font-size: 3rem; margin-bottom: 0.5rem;">Login!</h1>
-        <p style="color: #71717a; margin-bottom: 2rem;">Studio CMS access requires authentication.</p>
-        <button onclick="window.location.reload()" style="padding: 12px 24px; background: #000; color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
-          Log In
-        </button>
-      </body>
-    </html>`,
-        {
-            status: 401,
-            headers: {
-                'WWW-Authenticate': 'Basic realm="Secure Studio CMS Area"',
-                'content-type': 'text/html',
-            },
-        }
-    )
-}
+  // 4. Protect the Dashboard (Any logged-in user)
+  if (isDashboardRoute(req)) {
+    await auth.protect()
+  }
+})
 
-// See "Matching Paths" below to learn more
 export const config = {
-    matcher: '/studio/:path*',
+  matcher: [
+    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
+    "/(api|trpc)(.*)",
+  ],
 }

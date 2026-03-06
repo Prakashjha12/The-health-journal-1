@@ -9,11 +9,24 @@
 
 import { NextStudio } from 'next-sanity/studio'
 import config from '../../../../sanity.config'
+import { auth, clerkClient } from "@clerk/nextjs/server"
+import { redirect } from "next/navigation"
 
-export const dynamic = 'force-static'
+export const dynamic = 'force-dynamic'
 
 export { metadata, viewport } from 'next-sanity/studio'
 
-export default function StudioPage() {
+export default async function StudioPage() {
+  const { userId } = await auth()
+  if (!userId) redirect("/sign-in?redirect_url=/studio")
+
+  const client = await clerkClient()
+  const user = await client.users.getUser(userId)
+
+  const isSuperUser =
+    user.publicMetadata?.role === "admin" || user.publicMetadata?.isSuperUser === true
+
+  if (!isSuperUser) redirect("/")
+
   return <NextStudio config={config} />
 }

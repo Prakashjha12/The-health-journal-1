@@ -7,7 +7,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { DotPattern } from "@/components/ui/dot-pattern"
-import { cn } from "@/lib/utils"
+import { cn, calculateReadingTime } from "@/lib/utils"
 import Link from "next/link"
 import Image from "next/image"
 import { urlFor } from "@/sanity/lib/image"
@@ -109,13 +109,14 @@ export default function MedicalBlogUI({ posts, bookmarkedArticleIds = [] }: { po
     const mappedArticles = React.useMemo(() =>
         posts.map((post, index) => {
             const displayDate = post.publishedAt || post._createdAt || new Date("2024-01-01").toISOString()
+            const readingTime = calculateReadingTime(post.body)
             return {
                 id: post._id,
                 title: post.title,
                 slug: post.slug?.current || '#',
                 excerpt: "Read this full article in our Medical Insights portal. Discover evidence-based insights and latest research findings.",
                 category: CATEGORIES[1 + (index % (CATEGORIES.length - 1))],
-                readTime: `${3 + (index % 8)} min read`,
+                readTime: `${readingTime} min read`,
                 date: new Date(displayDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
                 imageUrl: post.image ? urlFor(post.image).width(800).height(500).url() : null
             }

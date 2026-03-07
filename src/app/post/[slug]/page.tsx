@@ -6,6 +6,7 @@ import { urlFor } from '../../../sanity/lib/image'
 import Link from 'next/link'
 import { Stethoscope } from 'lucide-react'
 import { Navbar } from '@/components/Navbar'
+import { calculateReadingTime } from '@/lib/utils'
 import {
   ReadingProgressBar,
   ReadingTimeBadge,
@@ -17,26 +18,6 @@ import { getBookmarks } from '@/lib/actions/user.actions'
 
 export const revalidate = 60
 
-interface Block {
-  _type: string
-  children?: { text?: string }[]
-}
-
-// Calculate reading time from portable text body
-function getReadingTime(body: Block[]): number {
-  if (!body) return 1
-  let wordCount = 0
-  for (const block of body) {
-    if (block._type === 'block' && block.children) {
-      for (const child of block.children) {
-        if (child.text) {
-          wordCount += child.text.split(/\s+/).filter(Boolean).length
-        }
-      }
-    }
-  }
-  return Math.max(1, Math.ceil(wordCount / 200))
-}
 
 export default async function PostPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
@@ -55,7 +36,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
     )
   }
 
-  const readingTime = getReadingTime(post.body)
+  const readingTime = calculateReadingTime(post.body)
   const bookmarkedArticleIds = await getBookmarks()
   const isBookmarked = bookmarkedArticleIds.includes(post._id)
 

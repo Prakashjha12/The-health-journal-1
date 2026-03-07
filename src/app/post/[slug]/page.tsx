@@ -220,8 +220,11 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
               </nav>
             </div>
           </div>
-          <div className="mt-8 pt-6 border-t border-border text-center text-xs text-muted-foreground">
+          <div className="mt-8 pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
             <p suppressHydrationWarning>&copy; {new Date().getFullYear()} — Komal&apos;s Blog. All Rights Reserved.</p>
+            <p>
+              Made by <a href="https://www.prakashjha.com" target="_blank" rel="noopener noreferrer" className="font-medium hover:text-foreground transition-colors underline underline-offset-4">Prakashjha</a>
+            </p>
           </div>
         </div>
       </footer>

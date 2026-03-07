@@ -1,5 +1,5 @@
 import { client } from '../../../sanity/lib/client'
-import { postBySlugQuery } from '../../../sanity/lib/queries'
+import { postBySlugQuery, recentPostsQuery } from '../../../sanity/lib/queries'
 import { PortableText } from '@portabletext/react'
 import Image from 'next/image'
 import { urlFor } from '../../../sanity/lib/image'
@@ -39,6 +39,22 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
   const readingTime = calculateReadingTime(post.body)
   const bookmarkedArticleIds = await getBookmarks()
   const isBookmarked = bookmarkedArticleIds.includes(post._id)
+
+  const recentPostsData = await client.fetch(recentPostsQuery, { slug })
+  const CATEGORIES = ["All", "Health", "Wellness", "Research", "Lifestyle", "Nutrition"]
+  const recentArticles = recentPostsData.map((rp: any, index: number) => {
+    const displayDate = rp.publishedAt || rp._createdAt || new Date("2024-01-01").toISOString()
+    const readTimeVal = calculateReadingTime(rp.body)
+    return {
+      id: rp._id,
+      title: rp.title,
+      slug: rp.slug?.current || '#',
+      category: CATEGORIES[1 + (index % (CATEGORIES.length - 1))],
+      readTime: `${readTimeVal} min read`,
+      date: new Date(displayDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      imageUrl: rp.image ? urlFor(rp.image).width(800).height(500).url() : null
+    }
+  })
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
@@ -176,6 +192,57 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
             </aside>
           </div>
         </div>
+
+        {/* ─── READ NEXT ─── */}
+        {recentArticles.length > 0 && (
+          <div className="max-w-[1200px] mx-auto px-6 pb-20 border-t border-border pt-16">
+            <h2 className="text-2xl font-bold tracking-tight mb-8">Read Next</h2>
+            <div className="grid gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
+              {recentArticles.map((article: any) => (
+                <Link href={`/post/${article.slug}`} key={article.id} className="group">
+                  <article className="flex flex-col rounded-2xl overflow-hidden bg-card border border-border/40 shadow-[0_1px_3px_rgba(0,0,0,0.08)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:-translate-y-1 transition-all duration-300 ease-out h-full">
+                    {/* Card Image */}
+                    <div className="relative w-full aspect-[16/11] bg-secondary overflow-hidden">
+                      {article.imageUrl ? (
+                        <Image
+                          src={article.imageUrl}
+                          alt={article.title}
+                          fill
+                          className="object-cover group-hover:scale-[1.03] transition-transform duration-500 ease-out"
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        />
+                      ) : (
+                        <div className="flex items-center justify-center h-full">
+                          <Stethoscope className="h-12 w-12 text-muted-foreground/20" />
+                        </div>
+                      )}
+                      {/* Category Badge & Bookmark */}
+                      <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between z-10">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-background/80 backdrop-blur-sm text-foreground">
+                          <span className="w-2 h-2 rounded-full bg-foreground/70" />
+                          {article.category}
+                        </span>
+                        <BookmarkButton
+                          articleId={article.id}
+                          initialIsBookmarked={bookmarkedArticleIds.includes(article.id)}
+                        />
+                      </div>
+                    </div>
+                    {/* Card Content */}
+                    <div className="p-5 flex flex-col flex-1">
+                      <h3 className="font-semibold text-base leading-snug tracking-tight mb-2 group-hover:text-foreground/80 transition-colors line-clamp-2">
+                        {article.title}
+                      </h3>
+                      <p className="text-xs text-muted-foreground mt-auto" suppressHydrationWarning>
+                        {article.date} &bull; {article.readTime}
+                      </p>
+                    </div>
+                  </article>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
       </main>
 
       {/* ─── FOOTER ─── */}

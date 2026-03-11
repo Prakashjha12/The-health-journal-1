@@ -27,8 +27,12 @@ interface Post {
 export const revalidate = 60 // Revalidate cache every 60 seconds
 
 export default async function Home() {
-  // Fetch from Sanity on the server
-  const posts: Post[] = await client.fetch(postsQuery)
+  // Fetch from Sanity on the server only if configured
+  const isConfigured = client.config().projectId !== 'placeholder'
+
+  const posts: Post[] = isConfigured
+    ? await client.fetch(postsQuery)
+    : []
 
   // Fetch bookmarks
   const bookmarkedArticleIds: string[] = await getBookmarks()

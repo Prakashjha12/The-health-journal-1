@@ -21,7 +21,8 @@ export const revalidate = 60
 
 export default async function PostPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
-  const post = await client.fetch(postBySlugQuery, { slug })
+  const isConfigured = client.config().projectId !== 'placeholder'
+  const post = isConfigured ? await client.fetch(postBySlugQuery, { slug }) : null
 
   if (!post) {
     return (
@@ -40,7 +41,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
   const bookmarkedArticleIds = await getBookmarks()
   const isBookmarked = bookmarkedArticleIds.includes(post._id)
 
-  const recentPostsData = await client.fetch(recentPostsQuery, { slug })
+  const recentPostsData = isConfigured ? await client.fetch(recentPostsQuery, { slug }) : []
   const CATEGORIES = ["All", "Health", "Wellness", "Research", "Lifestyle", "Nutrition"]
   const recentArticles = recentPostsData.map((rp: any, index: number) => {
     const displayDate = rp.publishedAt || rp._createdAt || new Date("2024-01-01").toISOString()

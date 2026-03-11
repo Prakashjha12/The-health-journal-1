@@ -55,12 +55,24 @@ export function Navbar() {
                             </Link>
                         ))}
                         <SignedIn>
-                            <Link
-                                href="/dashboard"
-                                className="text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
-                            >
-                                Dashboard
-                            </Link>
+                            {isSuperUser && (
+                                <>
+                                    <Link
+                                        href="/studio"
+                                        className="text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+                                    >
+                                        Add/Edit-Blogs
+                                    </Link>
+                                    <Link
+                                        href="https://www.sanity.io/@oNjfe3kMn"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+                                    >
+                                        Sanity Dashboard
+                                    </Link>
+                                </>
+                            )}
                         </SignedIn>
                     </nav>
                 </div>
@@ -92,64 +104,87 @@ export function Navbar() {
                                         labelIcon={<Bookmark className="h-4 w-4" />}
                                     />
                                 )}
+                                {isSuperUser && (                                    
+                                    <UserButton.Link
+                                        label="Sanity Dashboard"
+                                        href="https://www.sanity.io/@oNjfe3kMn"
+                                        labelIcon={<Bookmark className="h-4 w-4" />}
+                                    />
+                                )}
                             </UserButton.MenuItems>
                         </UserButton>
                     </SignedIn>
                 </div>
 
-                <button className="flex md:hidden p-2" onClick={toggleMenu} aria-label="Toggle menu">
-                    {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-                </button>
+                <div className="flex md:hidden items-center gap-1">
+                    <ThemeToggle />
+                    <button className="p-2" onClick={toggleMenu} aria-label="Toggle menu">
+                        {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                    </button>
+                </div>
             </div>
 
             {/* Mobile Menu */}
             {isMenuOpen && (
-                <div className="md:hidden border-t border-border bg-background px-6 py-4 space-y-3">
-                    {menuItems.map((item, index) => (
-                        <Link
-                            key={index}
-                            href={item.href}
-                            onClick={toggleMenu}
-                            className="block text-sm text-muted-foreground hover:text-foreground py-1.5"
-                        >
-                            {item.name}
-                        </Link>
-                    ))}
-                    <SignedIn>
-                        <Link
-                            href="/dashboard"
-                            onClick={toggleMenu}
-                            className="block text-sm text-muted-foreground hover:text-foreground py-1.5"
-                        >
-                            Dashboard
-                        </Link>
-                        <Link
-                            href="/dashboard/saved-articles"
-                            onClick={toggleMenu}
-                            className="block text-sm text-muted-foreground hover:text-foreground py-1.5"
-                        >
-                            My Saved Blogs
-                        </Link>
-                        {isSuperUser && (
+                <div className="md:hidden border-t border-border bg-background">
+                    <nav className="flex flex-col divide-y divide-border/50">
+                        {menuItems.map((item, index) => (
                             <Link
-                                href="/studio"
+                                key={index}
+                                href={item.href}
                                 onClick={toggleMenu}
-                                className="block text-sm text-muted-foreground hover:text-foreground py-1.5"
+                                className="flex items-center justify-between px-6 py-3.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors"
                             >
-                                CMS
+                                {item.name}
+                                <span className="text-muted-foreground/40">›</span>
                             </Link>
-                        )}
-                    </SignedIn>
-                    <div className="flex items-center gap-3 pt-2 border-t border-border">
-                        <ThemeToggle />
-                        <SignedOut>
-                            <Link href="/sign-in">
-                                <Button variant="outline" size="sm" className="text-xs">Sign In</Button>
-                            </Link>
-                        </SignedOut>
+                        ))}
                         <SignedIn>
-                            <UserButton />
+                            <Link
+                                href="/dashboard/saved-articles"
+                                onClick={toggleMenu}
+                                className="flex items-center justify-between px-6 py-3.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors"
+                            >
+                                My Saved Blogs
+                                <span className="text-muted-foreground/40">›</span>
+                            </Link>
+                            {isSuperUser && (
+                                <>
+                                    <Link
+                                        href="/studio"
+                                        onClick={toggleMenu}
+                                        className="flex items-center justify-between px-6 py-3.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors"
+                                    >
+                                        Add/Edit-Blogs
+                                        <span className="text-muted-foreground/40">›</span>
+                                    </Link>
+                                    <Link
+                                        href="https://www.sanity.io/@oNjfe3kMn"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        onClick={toggleMenu}
+                                        className="flex items-center justify-between px-6 py-3.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors"
+                                    >
+                                        Sanity Dashboard
+                                        <span className="text-muted-foreground/40">›</span>
+                                    </Link>
+                                </>
+                            )}
                         </SignedIn>
+                    </nav>
+                    {/* Account row */}
+                    <div className="flex items-center justify-between px-6 py-4 border-t border-border">
+                        <span className="text-xs text-muted-foreground font-medium">Account</span>
+                        <div className="flex items-center gap-3">
+                            <SignedOut>
+                                <Link href="/sign-in">
+                                    <Button variant="outline" size="sm" className="text-xs h-8">Sign In</Button>
+                                </Link>
+                            </SignedOut>
+                            <SignedIn>
+                                <UserButton />
+                            </SignedIn>
+                        </div>
                     </div>
                 </div>
             )}

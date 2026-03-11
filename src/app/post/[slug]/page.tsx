@@ -1,4 +1,4 @@
-import { client } from '../../../sanity/lib/client'
+import { sanityFetch } from '../../../sanity/lib/live'
 import { postBySlugQuery, recentPostsQuery } from '../../../sanity/lib/queries'
 import { PortableText } from '@portabletext/react'
 import Image from 'next/image'
@@ -16,7 +16,7 @@ import {
 import { BookmarkButton } from '@/components/BookmarkButton'
 import { getBookmarks } from '@/lib/actions/user.actions'
 
-export const revalidate = 60
+
 
 
 import { dataset, projectId } from '@/sanity/env'
@@ -24,7 +24,8 @@ import { dataset, projectId } from '@/sanity/env'
 export default async function PostPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   const isConfigured = projectId !== 'placeholder' && dataset !== 'placeholder'
-  const post = isConfigured ? await client.fetch(postBySlugQuery, { slug }) : null
+  const postResponse = isConfigured ? await sanityFetch({ query: postBySlugQuery, params: { slug } }) : null
+  const post = postResponse?.data || null
 
   if (!post) {
     return (
@@ -43,16 +44,19 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
   const bookmarkedArticleIds = await getBookmarks()
   const isBookmarked = bookmarkedArticleIds.includes(post._id)
 
-  const recentPostsData = isConfigured ? await client.fetch(recentPostsQuery, { slug }) : []
-  const CATEGORIES = ["All", "Health", "Wellness", "Research", "Lifestyle", "Nutrition"]
+  const recentPostsResponse = isConfigured ? await sanityFetch({ query: recentPostsQuery, params: { slug } }) : { data: [] }
+  const recentPostsData = recentPostsResponse?.data || []
   const recentArticles = recentPostsData.map((rp: any, index: number) => {
     const displayDate = rp.publishedAt || rp._createdAt || new Date("2024-01-01").toISOString()
     const readTimeVal = calculateReadingTime(rp.body)
+    const postCategory = rp.categories && rp.categories.length > 0 && rp.categories[0].title
+      ? rp.categories[0].title
+      : "Health"
     return {
       id: rp._id,
       title: rp.title,
       slug: rp.slug?.current || '#',
-      category: CATEGORIES[1 + (index % (CATEGORIES.length - 1))],
+      category: postCategory,
       readTime: `${readTimeVal} min read`,
       date: new Date(displayDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
       imageUrl: rp.image ? urlFor(rp.image).width(800).height(500).url() : null
@@ -97,7 +101,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
                 <ReadingTimeBadge minutes={readingTime} />
               </div>
 
-              <div className="flex-shrink-0 md:absolute md:right-6 md:mt-0">
+              <div className="shrink-0 md:absolute md:right-6 md:mt-0">
                 <BookmarkButton articleId={post._id} initialIsBookmarked={isBookmarked} className="rounded-md px-4 py-2 w-auto gap-2 border">
                   <span className="text-sm font-medium">{isBookmarked ? "Saved" : "Save article"}</span>
                 </BookmarkButton>
@@ -168,7 +172,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
                 </p>
 
                 <p className="text-[13px] text-muted-foreground leading-relaxed">
-                  At Komal&apos;s Blog, we create free, easy-to-read articles backed by real medical research and expert insights.
+                  At The Health Journal, we create free, easy-to-read articles backed by real medical research and expert insights.
                 </p>
 
                 <p className="text-[13px] text-muted-foreground leading-relaxed">
@@ -185,14 +189,117 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
                 </div>
 
                 <p className="text-[13px] text-muted-foreground">
-                  🧠 Stay informed. Stay healthy. Read Komal&apos;s Blog.
+                  🧠 Stay informed. Stay healthy. Read The Health Journal.
                 </p>
 
                 <p className="text-sm font-semibold">
-                  Better Health with Komal&apos;s Blog
+                  Better Health with The Health Journal
                 </p>
               </div>
             </aside>
+          </div>
+        </div>
+
+        {/* ─── AUTHOR & REVIEWER PROFILES ─── */}
+        <div className="max-w-[1000px] mx-auto px-6 pb-20 mt-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            {/* WRITTEN BY (AUTHOR) */}
+            <div className={`bg-card border border-border/60 rounded-2xl p-6 flex flex-col sm:flex-row items-center sm:items-start gap-5 shadow-sm ${!post.reviewer ? 'md:col-span-2 max-w-[800px] mx-auto' : ''}`}>
+              {post.author?.image ? (
+                <Link href={post.author.slug ? `/author/${post.author.slug}` : "#"} className="shrink-0">
+                  <Image
+                    src={urlFor(post.author.image)?.width(160).height(160).url() as string}
+                    alt={post.author.name || "Publisher"}
+                    width={80}
+                    height={80}
+                    className="rounded-full object-cover w-[80px] h-[80px] border-2 border-border/50 bg-secondary shrink-0 hover:ring-4 hover:ring-primary/20 transition-all cursor-pointer"
+                  />
+                </Link>
+              ) : (
+                <div className="w-[80px] h-[80px] rounded-full border-2 border-border/50 bg-muted flex items-center justify-center shrink-0">
+                  <Stethoscope className="h-8 w-8 text-muted-foreground mt-1" />
+                </div>
+              )}
+              <div className="text-center sm:text-left flex-1 min-w-0">
+                <h3 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">Written By</h3>
+                <h4 className="text-lg font-bold tracking-tight mb-2 flex items-center justify-center sm:justify-start gap-2">
+                  <Link href={post.author?.slug ? `/author/${post.author.slug}` : "#"} className="hover:text-primary transition-colors hover:underline decoration-primary/30 underline-offset-4 truncate">
+                    {post.author?.name || "Dr Rajnandini Dubey"}
+                  </Link>
+                  {post.author?.linkedin && (
+                    <a
+                      href={post.author.linkedin}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-muted-foreground hover:text-[#0A66C2] transition-colors p-1 shrink-0"
+                      title="LinkedIn Profile"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
+                      </svg>
+                    </a>
+                  )}
+                </h4>
+                {post.author?.bio ? (
+                  <div className="text-[14px] leading-relaxed text-muted-foreground prose prose-zinc dark:prose-invert line-clamp-2">
+                    <PortableText value={post.author.bio} />
+                  </div>
+                ) : (
+                  <p className="text-[14px] leading-relaxed text-muted-foreground line-clamp-2">
+                    Health professional and writer at The Health Journal, dedicated to providing accurate, research-backed insights for better wellbeing.
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* REVIEWED BY (REVIEWER) - Conditionally Rendered */}
+            {post.reviewer && (
+              <div className="bg-card border border-border/60 rounded-2xl p-6 flex flex-col sm:flex-row items-center sm:items-start gap-5 shadow-sm">
+                {post.reviewer.image ? (
+                  <Link href={post.reviewer.slug ? `/author/${post.reviewer.slug}` : "#"} className="shrink-0">
+                    <Image
+                      src={urlFor(post.reviewer.image)?.width(160).height(160).url() as string}
+                      alt={post.reviewer.name || "Reviewer"}
+                      width={80}
+                      height={80}
+                      className="rounded-full object-cover w-[80px] h-[80px] border-2 border-border/50 bg-secondary shrink-0 hover:ring-4 hover:ring-primary/20 transition-all cursor-pointer"
+                    />
+                  </Link>
+                ) : (
+                  <div className="w-[80px] h-[80px] rounded-full border-2 border-border/50 bg-muted flex items-center justify-center shrink-0">
+                    <Stethoscope className="h-8 w-8 text-muted-foreground mt-1" />
+                  </div>
+                )}
+                <div className="text-center sm:text-left flex-1 min-w-0">
+                  <h3 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">Medical Reviewer</h3>
+                  <h4 className="text-lg font-bold tracking-tight mb-2 flex items-center justify-center sm:justify-start gap-2">
+                    <Link href={post.reviewer.slug ? `/author/${post.reviewer.slug}` : "#"} className="hover:text-primary transition-colors hover:underline decoration-primary/30 underline-offset-4 truncate">
+                      {post.reviewer.name}
+                    </Link>
+                    {post.reviewer.linkedin && (
+                      <a
+                        href={post.reviewer.linkedin}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-muted-foreground hover:text-[#0A66C2] transition-colors p-1 shrink-0"
+                        title="LinkedIn Profile"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
+                        </svg>
+                      </a>
+                    )}
+                  </h4>
+                  {post.reviewer.bio && (
+                    <div className="text-[14px] leading-relaxed text-muted-foreground prose prose-zinc dark:prose-invert line-clamp-2">
+                      <PortableText value={post.reviewer.bio} />
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
           </div>
         </div>
 
@@ -257,10 +364,10 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
                 <div className="h-8 w-8 rounded-md bg-foreground flex items-center justify-center">
                   <Stethoscope className="h-4 w-4 text-background" />
                 </div>
-                <span className="font-bold text-base tracking-tight">Komal&apos;s Blog</span>
+                <span className="font-bold text-base tracking-tight">The Health Journal</span>
               </div>
               <p className="text-[13px] text-muted-foreground max-w-sm leading-relaxed">
-                Welcome to Komal&apos;s Blog, your free library of health insights and wellness guides. Evidence-based content you can trust.
+                Welcome to The Health Journal, your free library of health insights and wellness guides. Evidence-based content you can trust.
               </p>
             </div>
             <div>
@@ -272,7 +379,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
             </div>
           </div>
           <div className="mt-8 pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
-            <p suppressHydrationWarning>&copy; {new Date().getFullYear()} — Komal&apos;s Blog. All Rights Reserved.</p>
+            <p suppressHydrationWarning>&copy; {new Date().getFullYear()} — The Health Journal. All Rights Reserved.</p>
             <p>
               Made by <a href="https://www.prakashjha.com" target="_blank" rel="noopener noreferrer" className="font-medium hover:text-foreground transition-colors underline underline-offset-4">Prakashjha</a>
             </p>

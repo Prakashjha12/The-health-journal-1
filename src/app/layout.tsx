@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { ClerkProvider } from "@clerk/nextjs";
+import { SanityLive } from "@/sanity/lib/live";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Komal's Blog",
+  title: "The Health Journal",
   description: "A modern blog powered by Next.js and Sanity.io",
 };
 
@@ -37,6 +38,7 @@ export default function RootLayout({
             enableSystem
           >
             {children}
+            <SanityLive />
           </ThemeProvider>
         </body>
       </html>

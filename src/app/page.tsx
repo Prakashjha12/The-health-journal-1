@@ -1,4 +1,4 @@
-import { client } from '@/sanity/lib/client'
+import { sanityFetch } from '@/sanity/lib/live'
 import { postsQuery } from '@/sanity/lib/queries'
 import MedicalBlogUI from '@/components/MedicalBlogUI'
 import { getBookmarks } from '@/lib/actions/user.actions'
@@ -26,15 +26,14 @@ interface Post {
 
 import { dataset, projectId } from '@/sanity/env'
 
-export const revalidate = 60 // Revalidate cache every 60 seconds
-
 export default async function Home() {
   // Fetch from Sanity on the server only if configured
   const isConfigured = projectId !== 'placeholder' && dataset !== 'placeholder'
 
-  const posts: Post[] = isConfigured
-    ? await client.fetch(postsQuery)
-    : []
+  const postsResponse = isConfigured
+    ? await sanityFetch({ query: postsQuery })
+    : { data: [] }
+  const posts: Post[] = postsResponse.data
 
   // Fetch bookmarks
   const bookmarkedArticleIds: string[] = await getBookmarks()

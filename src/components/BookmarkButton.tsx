@@ -8,6 +8,7 @@ import { toggleBookmark } from "@/lib/actions/user.actions"
 import { useAuth } from "@clerk/nextjs"
 import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
+import confetti from "canvas-confetti"
 
 interface BookmarkButtonProps {
     articleId: string
@@ -52,7 +53,7 @@ export function BookmarkButton({ articleId, initialIsBookmarked = false, classNa
     return (
         <>
             {isSignedIn ? (
-                <ConfettiButton
+                <Button
                     variant="secondary"
                     size={children ? "default" : "icon"}
                     className={cn(
@@ -63,13 +64,24 @@ export function BookmarkButton({ articleId, initialIsBookmarked = false, classNa
                             : "bg-background/80 hover:bg-accent text-foreground",
                         className
                     )}
-                    onClick={handleBookmark}
-                    disabled={isPending}
-                    options={{
-                        get colors() {
-                            return ["#a786ff", "#fd8bbc", "#eca184", "#f8deb1"]
-                        },
+                    onClick={(e) => {
+                        handleBookmark(e)
+                        
+                        // Fire confetti manually only when toggling TO saved state
+                        if (!isBookmarked) {
+                            const rect = e.currentTarget.getBoundingClientRect()
+                            const x = rect.left + rect.width / 2
+                            const y = rect.top + rect.height / 2
+                            confetti({
+                                origin: {
+                                    x: x / window.innerWidth,
+                                    y: y / window.innerHeight,
+                                },
+                                colors: ["#a786ff", "#fd8bbc", "#eca184", "#f8deb1"],
+                            })
+                        }
                     }}
+                    disabled={isPending}
                 >
                     <Bookmark
                         className={cn(
@@ -78,7 +90,7 @@ export function BookmarkButton({ articleId, initialIsBookmarked = false, classNa
                         )}
                     />
                     {children}
-                </ConfettiButton>
+                </Button>
             ) : (
                 <Button
                     variant="secondary"

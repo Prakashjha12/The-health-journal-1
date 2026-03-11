@@ -27,10 +27,10 @@ interface SanityPost {
             _type: 'reference'
         }
     } | null
+    categories?: { title: string }[]
     body?: unknown[]
 }
 
-const CATEGORIES = ["All", "Health", "Wellness", "Research", "Lifestyle", "Nutrition"]
 const POSTS_PER_PAGE = 6
 
 const FALLBACK_ARTICLES = [
@@ -101,6 +101,20 @@ export default function MedicalBlogUI({ posts, bookmarkedArticleIds = [] }: { po
     const [activeCategory, setActiveCategory] = React.useState("All")
     const [currentPage, setCurrentPage] = React.useState(1)
 
+    // Extract dynamic categories from Sanity posts, with a fallback
+    const dynamicCategories = React.useMemo(() => {
+        const extracted = new Set<string>()
+        posts.forEach(post => {
+            if (post.categories && post.categories.length > 0) {
+                post.categories.forEach(cat => {
+                    if (cat.title) extracted.add(cat.title)
+                })
+            }
+        })
+        const cats = Array.from(extracted)
+        return ["All", ...(cats.length > 0 ? cats : ["Health", "Wellness", "Research", "Lifestyle", "Nutrition"])]
+    }, [posts])
+
     const handleCategoryChange = React.useCallback((cat: string) => {
         setActiveCategory(cat)
         setCurrentPage(1)
@@ -110,12 +124,17 @@ export default function MedicalBlogUI({ posts, bookmarkedArticleIds = [] }: { po
         posts.map((post, index) => {
             const displayDate = post.publishedAt || post._createdAt || new Date("2024-01-01").toISOString()
             const readingTime = calculateReadingTime(post.body)
+            // Use the first assigned category, or fallback to 'Health' to prevent errors if empty
+            const postCategory = post.categories && post.categories.length > 0 && post.categories[0].title
+                ? post.categories[0].title
+                : "Health"
+
             return {
                 id: post._id,
                 title: post.title,
                 slug: post.slug?.current || '#',
                 excerpt: "Read this full article in our Medical Insights portal. Discover evidence-based insights and latest research findings.",
-                category: CATEGORIES[1 + (index % (CATEGORIES.length - 1))],
+                category: postCategory,
                 readTime: `${readingTime} min read`,
                 date: new Date(displayDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
                 imageUrl: post.image ? urlFor(post.image).width(800).height(500).url() : null
@@ -167,7 +186,7 @@ export default function MedicalBlogUI({ posts, bookmarkedArticleIds = [] }: { po
                         <h1 className="text-[32px] md:text-[58px] font-extrabold leading-[1.15] tracking-tight mb-6">
                             Got a Health question?
                             <br />
-                            Ask Komal.
+                            Ask The Health Journal.
                         </h1>
 
                         {/* Search Bar */}
@@ -196,7 +215,7 @@ export default function MedicalBlogUI({ posts, bookmarkedArticleIds = [] }: { po
                 <section className="w-full ">
                     <div className="max-w-[1200px] mx-auto px-6 overflow-x-auto">
                         <div className="flex items-center justify-center gap-3 py-5">
-                            {CATEGORIES.map((cat) => (
+                            {dynamicCategories.map((cat) => (
                                 <button
                                     key={cat}
                                     onClick={() => handleCategoryChange(cat)}
@@ -215,112 +234,171 @@ export default function MedicalBlogUI({ posts, bookmarkedArticleIds = [] }: { po
                     </div>
                 </section>
 
-                {/* ─── ARTICLES GRID ─── */}
+                {/* ─── ARTICLES SECTION ─── */}
                 <section id="articles" className="w-full py-10">
                     <div className="max-w-[1200px] mx-auto px-6">
                         <div className="grid gap-8 lg:grid-cols-[1fr_300px]">
-                            {/* Main Grid */}
+                            {/* Main Content Column */}
                             <div>
-                                {paginatedArticles.length > 0 ? (
-                                    <div className="grid gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-3 card-stagger">
-                                        {paginatedArticles.map((article) => (
-                                            <Link href={`/post/${article.slug}`} key={article.id} className="group">
-                                                <article className="flex flex-col rounded-2xl overflow-hidden bg-card shadow-[0_1px_3px_rgba(0,0,0,0.08)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:-translate-y-1 transition-all duration-300 ease-out">
-                                                    {/* Card Image */}
-                                                    <div className="relative w-full aspect-[16/11] bg-secondary overflow-hidden">
-                                                        {article.imageUrl ? (
-                                                            <Image
-                                                                src={article.imageUrl}
-                                                                alt={article.title}
-                                                                fill
-                                                                className="object-cover group-hover:scale-[1.03] transition-transform duration-500 ease-out"
-                                                                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                                                            />
-                                                        ) : (
-                                                            <div className="flex items-center justify-center h-full">
-                                                                <Stethoscope className="h-12 w-12 text-muted-foreground/20" />
-                                                            </div>
-                                                        )}
-                                                        {/* Category Badge & Bookmark */}
-                                                        <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between z-10">
-                                                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-background/80 backdrop-blur-sm text-foreground">
-                                                                <span className="w-2 h-2 rounded-full bg-foreground/70" />
-                                                                {article.category}
-                                                            </span>
-                                                            <BookmarkButton
-                                                                articleId={article.id}
-                                                                initialIsBookmarked={bookmarkedArticleIds.includes(article.id)}
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                    {/* Card Content */}
-                                                    <div className="p-5 flex flex-col flex-1">
-                                                        <h3 className="font-semibold text-base leading-snug tracking-tight mb-2 group-hover:text-foreground/80 transition-colors">
-                                                            {article.title}
-                                                        </h3>
-                                                        <p className="text-xs text-muted-foreground mt-auto" suppressHydrationWarning>
-                                                            {article.date} &bull; {article.readTime}
-                                                        </p>
-                                                    </div>
-                                                </article>
-                                            </Link>
-                                        ))}
-                                    </div>
-                                ) : (
+                                {filteredArticles.length === 0 ? (
                                     <div className="flex flex-col items-center justify-center py-20 text-center animate-fade-in-up">
                                         <Search className="h-10 w-10 text-muted-foreground/40 mb-4" />
                                         <h3 className="text-base font-semibold mb-1">No articles found</h3>
                                         <p className="text-sm text-muted-foreground">Try a different search or category.</p>
                                     </div>
-                                )}
+                                ) : (
+                                    <>
+                                        {/* ─── FEATURED ARTICLE (portrait card) ─── */}
+                                        {filteredArticles.length > 0 && (() => {
+                                            const featured = filteredArticles[0]
+                                            return (
+                                                <Link href={`/post/${featured.slug}`} className="group block mb-10">
+                                                    <article className="relative flex flex-col rounded-2xl overflow-hidden bg-card border border-border/40 shadow-[0_2px_8px_rgba(0,0,0,0.08)] transform-gpu backface-hidden">
+                                                        {/* Image — full-width, bleeds to card edges */}
+                                                        <div className="relative w-full aspect-video bg-secondary overflow-hidden -mb-px">
+                                                            {featured.imageUrl ? (
+                                                                <Image
+                                                                    src={featured.imageUrl}
+                                                                    alt={featured.title}
+                                                                    fill
+                                                                    className="object-cover"
+                                                                    sizes="(max-width: 768px) 100vw, (min-width: 1024px) 60vw, 100vw"
+                                                                    priority
+                                                                />
+                                                            ) : (
+                                                                <div className="flex items-center justify-center h-full">
+                                                                    <Stethoscope className="h-16 w-16 text-muted-foreground/20" />
+                                                                </div>
+                                                            )}
+                                                            {/* Category badge top-left */}
+                                                            <div className="absolute top-4 left-4 z-10">
+                                                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-foreground/90 backdrop-blur-sm text-background tracking-wide">
+                                                                    FEATURED · {featured.category.toUpperCase()}
+                                                                </span>
+                                                            </div>
+                                                            {/* Bookmark top-right */}
+                                                            <div className="absolute top-3 right-3 z-10">
+                                                                <BookmarkButton
+                                                                    articleId={featured.id}
+                                                                    initialIsBookmarked={bookmarkedArticleIds.includes(featured.id)}
+                                                                />
+                                                            </div>
+                                                            {/* Bottom gradient fade — image melts into card content */}
+                                                            <div className="absolute inset-x-0 -bottom-px h-32 bg-linear-to-t from-card via-card/70 to-transparent z-10 pointer-events-none" />
+                                                        </div>
 
-                                {/* Pagination */}
-                                {totalPages > 1 && (
-                                    <div className="flex items-center justify-start gap-1.5 mt-12">
-                                        <Button
-                                            variant="outline"
-                                            size="icon"
-                                            onClick={() => { setCurrentPage(Math.max(1, currentPage - 1)) }}
-                                            disabled={currentPage === 1}
-                                            className="h-8 w-8 text-xs"
-                                        >
-                                            <ChevronLeft className="h-3.5 w-3.5" />
-                                        </Button>
-                                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-                                            if (totalPages <= 7 || page === 1 || page === totalPages || Math.abs(page - currentPage) <= 1) {
-                                                return (
-                                                    <button
-                                                        key={page}
-                                                        onClick={() => { setCurrentPage(page) }}
-                                                        className={cn(
-                                                            "h-8 w-8 rounded-md text-[13px] font-medium transition-colors",
-                                                            currentPage === page
-                                                                ? "bg-foreground text-background"
-                                                                : "text-muted-foreground hover:text-foreground"
-                                                        )}
-                                                    >
-                                                        {page}
-                                                    </button>
-                                                )
-                                            }
-                                            if (page === 2 && currentPage > 3) {
-                                                return <span key="dots-start" className="px-1 text-muted-foreground text-xs">...</span>
-                                            }
-                                            if (page === totalPages - 1 && currentPage < totalPages - 2) {
-                                                return <span key="dots-end" className="px-1 text-muted-foreground text-xs">...</span>
-                                            }
-                                            return null
-                                        })}
-                                        <Button
-                                            variant="outline"
-                                            size="icon"
-                                            onClick={() => { setCurrentPage(Math.min(totalPages, currentPage + 1)) }}
-                                            disabled={currentPage === totalPages}
-                                            className="h-8 w-8 text-xs"
-                                        >
-                                            <ChevronRight className="h-3.5 w-3.5" />
-                                        </Button>
-                                    </div>
+                                                        {/* Content — sits below image */}
+                                                        <div className="flex flex-col gap-3 p-6 md:p-8">
+                                                            <p className="text-xs text-muted-foreground font-medium tracking-widest uppercase" suppressHydrationWarning>
+                                                                {featured.date} &nbsp;·&nbsp; {featured.readTime}
+                                                            </p>
+                                                            <h2 className="text-xl md:text-2xl font-extrabold leading-snug tracking-tight group-hover:text-primary transition-colors line-clamp-2">
+                                                                {featured.title}
+                                                            </h2>
+                                                            <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
+                                                                {featured.excerpt}
+                                                            </p>
+                                                            <div className="flex items-center gap-1.5 text-sm font-semibold text-foreground group-hover:text-primary transition-colors mt-1 pt-2 border-t border-border/50">
+                                                                Read Article
+                                                                <span className="group-hover:translate-x-1 transition-transform duration-200 inline-block">→</span>
+                                                            </div>
+                                                        </div>
+                                                    </article>
+                                                </Link>
+                                            )
+                                        })()}
+
+                                        {/* ─── LATEST ARTICLES GRID ─── */}
+                                        {filteredArticles.length > 1 && (
+                                            <>
+                                                <h3 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase mb-5">
+                                                    Recent Articles
+                                                </h3>
+                                                {(() => {
+                                                    const rest = filteredArticles.slice(1)
+                                                    const totalRest = rest.length
+                                                    const startIdx = (currentPage - 1) * POSTS_PER_PAGE
+                                                    const paginated = rest.slice(startIdx, startIdx + POSTS_PER_PAGE)
+
+                                                    return (
+                                                        <div className="grid gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
+                                                            {paginated.map((article) => (
+                                                                <Link href={`/post/${article.slug}`} key={article.id} className="group">
+                                                                    <article className="flex flex-col rounded-2xl overflow-hidden bg-card border border-border/40 shadow-[0_1px_3px_rgba(0,0,0,0.08)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.14)] dark:hover:shadow-[0_8px_30px_rgba(255,255,255,0.08)] hover:-translate-y-1 transition-all duration-300 ease-out h-full">
+                                                                        {/* Card Image */}
+                                                                        <div className="relative w-full aspect-[16/11] bg-secondary overflow-hidden">
+                                                                            {article.imageUrl ? (
+                                                                                <Image
+                                                                                    src={article.imageUrl}
+                                                                                    alt={article.title}
+                                                                                    fill
+                                                                                    className="object-cover transition-transform duration-500 ease-out"
+                                                                                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                                                                                />
+                                                                            ) : (
+                                                                                <div className="flex items-center justify-center h-full">
+                                                                                    <Stethoscope className="h-12 w-12 text-muted-foreground/20" />
+                                                                                </div>
+                                                                            )}
+                                                                            {/* Category Badge & Bookmark */}
+                                                                            <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between z-10">
+                                                                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-background/80 backdrop-blur-sm text-foreground">
+
+                                                                                    {article.category}
+                                                                                </span>
+                                                                                <BookmarkButton
+                                                                                    articleId={article.id}
+                                                                                    initialIsBookmarked={bookmarkedArticleIds.includes(article.id)}
+                                                                                />
+                                                                            </div>
+                                                                        </div>
+                                                                        {/* Card Content */}
+                                                                        <div className="p-5 flex flex-col flex-1">
+                                                                            <h3 className="font-semibold text-base leading-snug tracking-tight mb-2 group-hover:text-foreground/80 transition-colors line-clamp-2">
+                                                                                {article.title}
+                                                                            </h3>
+                                                                            <p className="text-xs text-muted-foreground mt-auto" suppressHydrationWarning>
+                                                                                {article.date} &bull; {article.readTime}
+                                                                            </p>
+                                                                        </div>
+                                                                    </article>
+                                                                </Link>
+                                                            ))}
+                                                        </div>
+                                                    )
+                                                })()}
+                                            </>
+                                        )}
+
+                                        {/* Pagination — based on rest of articles after featured */}
+                                        {(() => {
+                                            const restTotal = Math.max(0, filteredArticles.length - 1)
+                                            const pages = Math.max(1, Math.ceil(restTotal / POSTS_PER_PAGE))
+                                            if (pages <= 1) return null
+                                            return (
+                                                <div className="flex items-center justify-start gap-1.5 mt-12">
+                                                    <Button variant="outline" size="icon" onClick={() => setCurrentPage(Math.max(1, currentPage - 1))} disabled={currentPage === 1} className="h-8 w-8 text-xs">
+                                                        <ChevronLeft className="h-3.5 w-3.5" />
+                                                    </Button>
+                                                    {Array.from({ length: pages }, (_, i) => i + 1).map((page) => {
+                                                        if (pages <= 7 || page === 1 || page === pages || Math.abs(page - currentPage) <= 1) {
+                                                            return (
+                                                                <button key={page} onClick={() => setCurrentPage(page)} className={cn("h-8 w-8 rounded-md text-[13px] font-medium transition-colors", currentPage === page ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground")}>
+                                                                    {page}
+                                                                </button>
+                                                            )
+                                                        }
+                                                        if (page === 2 && currentPage > 3) return <span key="dots-start" className="px-1 text-muted-foreground text-xs">...</span>
+                                                        if (page === pages - 1 && currentPage < pages - 2) return <span key="dots-end" className="px-1 text-muted-foreground text-xs">...</span>
+                                                        return null
+                                                    })}
+                                                    <Button variant="outline" size="icon" onClick={() => setCurrentPage(Math.min(pages, currentPage + 1))} disabled={currentPage === pages} className="h-8 w-8 text-xs">
+                                                        <ChevronRight className="h-3.5 w-3.5" />
+                                                    </Button>
+                                                </div>
+                                            )
+                                        })()}
+                                    </>
                                 )}
                             </div>
 
@@ -328,19 +406,15 @@ export default function MedicalBlogUI({ posts, bookmarkedArticleIds = [] }: { po
                             <aside className="hidden lg:block">
                                 <div className="sticky top-16 bg-card border border-border rounded-lg p-6 space-y-4">
                                     <h4 className="font-bold text-base">Hey, Reader!</h4>
-
                                     <p className="text-[13px] text-muted-foreground leading-relaxed">
                                         Struggling with health questions, conflicting advice, or information overload? We got you.
                                     </p>
-
                                     <p className="text-[13px] text-muted-foreground leading-relaxed">
-                                        At Komal&apos;s Blog, we create free, easy-to-read articles backed by real medical research and expert insights.
+                                        At The Health Journal, we create free, easy-to-read articles backed by real medical research and expert insights.
                                     </p>
-
                                     <p className="text-[13px] text-muted-foreground leading-relaxed">
                                         Our articles simplify your research and deliver results faster. Get better answers, close knowledge gaps, and stay ahead of the curve.
                                     </p>
-
                                     <div className="space-y-1.5 text-[13px]">
                                         <p className="font-semibold">📌 What You&apos;ll Find Here:</p>
                                         <p>✅ Evidence-Based Health Insights</p>
@@ -349,13 +423,11 @@ export default function MedicalBlogUI({ posts, bookmarkedArticleIds = [] }: { po
                                         <p>✅ Nutrition &amp; Lifestyle Guides</p>
                                         <p>✅ Expert-Reviewed Content</p>
                                     </div>
-
                                     <p className="text-[13px] text-muted-foreground">
-                                        🧠 Stay informed. Stay healthy. Read Komal&apos;s Blog.
+                                        🧠 Stay informed. Stay healthy. Read The Health Journal.
                                     </p>
-
                                     <p className="text-sm font-semibold">
-                                        Better Health with Komal&apos;s Blog
+                                        Better Health with The Health Journal
                                     </p>
                                 </div>
                             </aside>
@@ -373,10 +445,10 @@ export default function MedicalBlogUI({ posts, bookmarkedArticleIds = [] }: { po
                                 <div className="h-8 w-8 rounded-md bg-foreground flex items-center justify-center">
                                     <Stethoscope className="h-4 w-4 text-background" />
                                 </div>
-                                <span className="font-bold text-base tracking-tight">Komal&apos;s Blog</span>
+                                <span className="font-bold text-base tracking-tight">The Health Journal</span>
                             </div>
                             <p className="text-[13px] text-muted-foreground max-w-sm leading-relaxed">
-                                Welcome to Komal&apos;s Blog, your free library of health insights and wellness guides. Evidence-based content you can trust.
+                                Welcome to The Health Journal, your free library of health insights and wellness guides. Evidence-based content you can trust.
                             </p>
                         </div>
                         <div>
@@ -388,9 +460,9 @@ export default function MedicalBlogUI({ posts, bookmarkedArticleIds = [] }: { po
                         </div>
                     </div>
                     <div className="mt-8 pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
-                        <p suppressHydrationWarning>&copy; {new Date().getFullYear()} — Komal&apos;s Blog. All Rights Reserved.</p>
+                        <p suppressHydrationWarning>&copy; {new Date().getFullYear()} — The Health Journal. All Rights Reserved.</p>
                         <p>
-                            Made by <a href="https://www.prakashjha.com" target="_blank" rel="noopener noreferrer" className="font-medium hover:text-foreground transition-colors underline underline-offset-4"> ❤️ Prakashjha</a>
+                            Made with ❤️ by <a href="https://www.prakashjha.com" target="_blank" rel="noopener noreferrer" className="font-medium hover:text-foreground transition-colors underline underline-offset-4">Prakashjha</a>
                         </p>
                     </div>
                 </div>

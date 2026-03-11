@@ -2,7 +2,7 @@ import SavedArticles from "@/components/SavedArticles"
 import { Bookmark } from "lucide-react"
 
 export const metadata = {
-    title: "My Saved Blogs | Komal's Blog",
+    title: "My Saved Blogs | The Health Journal",
 }
 
 export default function SavedArticlesPage() {

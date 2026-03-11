@@ -31,7 +31,7 @@ export default function SignUpPage() {
                 {/* Manual Disclaimer for UI clarity as Clerk Custom fields are often managed via Dashboard */}
                 <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
                     <p className="text-[11px] text-blue-700 dark:text-blue-300 leading-relaxed text-center">
-                        <strong>Medical Disclaimer:</strong> By creating an account, you acknowledge that all content on Komal&apos;s Blog is for informational purposes only and does not constitute medical advice. You agree to our <a href="/privacy" className="underline font-bold">Privacy Policy</a> and <a href="/terms" className="underline font-bold">Medical Disclosure</a>.
+                        <strong>Medical Disclaimer:</strong> By creating an account, you acknowledge that all content on The Health Journal is for informational purposes only and does not constitute medical advice. You agree to our <a href="/privacy" className="underline font-bold">Privacy Policy</a> and <a href="/terms" className="underline font-bold">Medical Disclosure</a>.
                     </p>
                 </div>
             </div>

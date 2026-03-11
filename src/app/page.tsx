@@ -24,11 +24,13 @@ interface Post {
   body?: unknown[];
 }
 
+import { dataset, projectId } from '@/sanity/env'
+
 export const revalidate = 60 // Revalidate cache every 60 seconds
 
 export default async function Home() {
   // Fetch from Sanity on the server only if configured
-  const isConfigured = client.config().projectId !== 'placeholder'
+  const isConfigured = projectId !== 'placeholder' && dataset !== 'placeholder'
 
   const posts: Post[] = isConfigured
     ? await client.fetch(postsQuery)

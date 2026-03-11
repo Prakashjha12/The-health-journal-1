@@ -14,7 +14,7 @@ export const projectId = assertValue(
 export const useCdn = true
 
 function assertValue<T>(v: T | undefined, errorMessage: string): T {
-  if (v === undefined) {
+  if (v === undefined || v === '') {
     // We log the warning but return a placeholder so the build doesn't crash 
     // before the user sets up their project.
     console.warn(errorMessage)

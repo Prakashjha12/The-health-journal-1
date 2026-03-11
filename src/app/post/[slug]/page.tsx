@@ -19,9 +19,11 @@ import { getBookmarks } from '@/lib/actions/user.actions'
 export const revalidate = 60
 
 
+import { dataset, projectId } from '@/sanity/env'
+
 export default async function PostPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
-  const isConfigured = client.config().projectId !== 'placeholder'
+  const isConfigured = projectId !== 'placeholder' && dataset !== 'placeholder'
   const post = isConfigured ? await client.fetch(postBySlugQuery, { slug }) : null
 
   if (!post) {

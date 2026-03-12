@@ -154,11 +154,9 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
               </div>
 
               {/* Mobile Social Share */}
-              <div className="lg:hidden mt-12 pt-8 border-t border-border">
-                <p className="text-sm font-medium text-muted-foreground mb-4">Share this article</p>
-                <div className="flex gap-3">
-                  <SocialShareSidebar title={post.title} />
-                </div>
+              <div className="lg:hidden mt-12 pt-8 border-t border-border flex flex-col items-center justify-center gap-4 text-center">
+                <p className="text-sm font-medium text-muted-foreground">Share this article</p>
+                <SocialShareSidebar title={post.title} className="flex-row" />
               </div>
             </article>
 

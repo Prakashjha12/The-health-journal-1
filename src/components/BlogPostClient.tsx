@@ -67,7 +67,7 @@ export function ReadingTimeBadge({ minutes }: { minutes: number }) {
     )
 }
 
-export function SocialShareSidebar({ title }: { title: string }) {
+export function SocialShareSidebar({ title, className }: { title: string, className?: string }) {
     const [copied, setCopied] = React.useState(false)
     const [currentUrl, setCurrentUrl] = React.useState("")
 
@@ -115,7 +115,7 @@ export function SocialShareSidebar({ title }: { title: string }) {
     }
 
     return (
-        <div className="flex flex-col items-center gap-3">
+        <div className={`flex items-center gap-3 ${className || 'flex-col'}`}>
             {shareLinks.map((link) => (
                 <a
                     key={link.name}

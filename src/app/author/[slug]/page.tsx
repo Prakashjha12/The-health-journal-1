@@ -196,6 +196,14 @@ export default async function AuthorPage({ params }: { params: Promise<{ slug: s
       {/* ─── FOOTER ─── */}
       <footer className="w-full border-t border-border bg-background">
         <div className="max-w-[1200px] mx-auto px-6 py-10">
+
+          {/* Medical Disclaimer */}
+          <div className="mt-8 mb-4 p-4 rounded-lg bg-muted/50 border border-border/50 text-center">
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              <span className="font-semibold text-foreground/80">Disclaimer:</span> The content on this site is for informational purposes only and is not a substitute for professional medical advice, diagnosis, or treatment.
+            </p>
+          </div>
+
           <div className="mt-8 pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
             <p suppressHydrationWarning>&copy; {new Date().getFullYear()} — The Health Journal. All Rights Reserved.</p>
             <p>

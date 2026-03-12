@@ -46,10 +46,13 @@ export function ReadingProgressBar() {
     }, [])
 
     return (
-        <div className="fixed top-0 left-0 right-0 z-[60] h-[3px] bg-transparent">
+        <div className="fixed top-14 left-0 right-0 z-[40] h-[3px] bg-transparent">
             <div
-                className="h-full bg-foreground/80 transition-[width] duration-150 ease-out"
-                style={{ width: `${progress}%` }}
+                className="h-full bg-foreground/80 origin-left will-change-transform"
+                style={{ 
+                    transform: `scaleX(${progress / 100})`,
+                    transition: 'transform 100ms ease-out'
+                }}
             />
         </div>
     )

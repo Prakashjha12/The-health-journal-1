@@ -40,8 +40,8 @@ export function Navbar() {
             <div className="max-w-[1200px] mx-auto px-6 flex h-14 items-center justify-between relative" suppressHydrationWarning>
                 <div className="flex items-center" suppressHydrationWarning>
                     <Link href="/" className="flex items-center space-x-2.5" suppressHydrationWarning>
-                        <div className="relative h-10 w-10 md:h-12 md:w-12 flex items-center justify-center shrink-0 rounded-md overflow-hidden" suppressHydrationWarning>
-                            <Image src="/logo1.svg" alt="Logo" fill className="object-contain" priority unoptimized />
+                        <div className="relative h-8 w-8 flex items-center justify-center shrink-0 rounded-md overflow-hidden" suppressHydrationWarning>
+                            <Image src="/LOGO.webp" alt="Logo" width={32} height={32} className="object-contain" priority />
                         </div>
                         <span className="font-bold text-base tracking-loose">The  <span className="dark:text-white text-[#032660] font-extralight text-2xl uppercase hover:font-extrabold transition-all duration-300  hover:text-[#032660]"> Health </span> Journal</span>
                     </Link>

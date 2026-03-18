@@ -1,10 +1,11 @@
 "use client"
 
 import * as React from "react"
-import { Stethoscope, Menu, X, Bookmark } from "lucide-react"
+import { Menu, X, Bookmark } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/ThemeToggle"
 import Link from "next/link"
+import Image from "next/image"
 import { UserButton, useAuth, useUser } from "@clerk/nextjs"
 
 function SignedIn({ children }: { children: React.ReactNode }) {
@@ -36,46 +37,47 @@ export function Navbar() {
 
     return (
         <header className="sticky top-0 z-50 w-full border-b border-border bg-background">
-            <div className="max-w-[1200px] mx-auto px-6 flex h-14 items-center justify-between" suppressHydrationWarning>
-                <div className="flex items-center gap-8" suppressHydrationWarning>
+            <div className="max-w-[1200px] mx-auto px-6 flex h-14 items-center justify-between relative" suppressHydrationWarning>
+                <div className="flex items-center" suppressHydrationWarning>
                     <Link href="/" className="flex items-center space-x-2.5" suppressHydrationWarning>
-                        <div className="h-8 w-8 rounded-md bg-foreground flex items-center justify-center" suppressHydrationWarning>
-                            <Stethoscope className="h-4 w-4 text-background" />
+                        <div className="relative h-8 w-8 flex items-center justify-center shrink-0 rounded-md overflow-hidden" suppressHydrationWarning>
+                            <Image src="/logo1.svg" alt="Logo" width={32} height={32} className="object-contain" priority />
                         </div>
-                        <span className="font-bold text-base tracking-tight">The Health Journal</span>
+                        <span className="font-bold text-base tracking-loose">The  <span className="dark:text-white text-[#032660] font-extralight text-2xl uppercase hover:font-extrabold transition-all duration-300  hover:text-[#032660]"> Health </span> Journal</span>
                     </Link>
-                    <nav className="hidden md:flex gap-5">
-                        {menuItems.map((item, index) => (
-                            <Link
-                                key={index}
-                                href={item.href}
-                                className="text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
-                            >
-                                {item.name}
-                            </Link>
-                        ))}
-                        <SignedIn>
-                            {isSuperUser && (
-                                <>
-                                    <Link
-                                        href="/studio"
-                                        className="text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
-                                    >
-                                        Add/Edit-Blogs
-                                    </Link>
-                                    <Link
-                                        href="https://www.sanity.io/@oNjfe3kMn"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
-                                    >
-                                        Sanity Dashboard
-                                    </Link>
-                                </>
-                            )}
-                        </SignedIn>
-                    </nav>
                 </div>
+
+                <nav className="hidden md:flex items-center absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 gap-5">
+                    {menuItems.map((item, index) => (
+                        <Link
+                            key={index}
+                            href={item.href}
+                            className="text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+                        >
+                            {item.name}
+                        </Link>
+                    ))}
+                    <SignedIn>
+                        {isSuperUser && (
+                            <>
+                                <Link
+                                    href="/studio"
+                                    className="text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+                                >
+                                    Add/Edit-Blogs
+                                </Link>
+                                <Link
+                                    href="https://www.sanity.io/@oNjfe3kMn"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+                                >
+                                    Sanity Dashboard
+                                </Link>
+                            </>
+                        )}
+                    </SignedIn>
+                </nav>
 
                 <div className="hidden md:flex items-center gap-4">
                     <ThemeToggle />
@@ -104,7 +106,7 @@ export function Navbar() {
                                         labelIcon={<Bookmark className="h-4 w-4" />}
                                     />
                                 )}
-                                {isSuperUser && (                                    
+                                {isSuperUser && (
                                     <UserButton.Link
                                         label="Sanity Dashboard"
                                         href="https://www.sanity.io/@oNjfe3kMn"

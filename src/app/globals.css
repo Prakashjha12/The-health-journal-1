@@ -134,6 +134,9 @@
   body {
     @apply bg-background text-foreground;
   }
+  ::selection {
+    @apply bg-foreground/20 text-foreground;
+  }
 }
 
 /* ─── Smooth category-switch animations ─── */

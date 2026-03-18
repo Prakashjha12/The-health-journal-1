@@ -182,7 +182,7 @@ export default function MedicalBlogUI({ posts, bookmarkedArticleIds = [] }: { po
                         cr={1.2}
                         className="fill-black/[0.15] dark:fill-white/[0.15] text-black/[0.15] dark:text-white/[0.15] [mask-image:linear-gradient(to_bottom,black_30%,transparent)] "
                     />
-                    <div className="relative z-10 max-w-[1200px] mx-auto px-6">
+                    <div className="relative z-10 max-w-[1200px] mx-auto px-6 cursor-default">
                         <h1 className="text-[32px] md:text-[58px] font-extrabold leading-[1.15] tracking-tight mb-6">
                             Got a Health question?
                             <br />
@@ -442,8 +442,8 @@ export default function MedicalBlogUI({ posts, bookmarkedArticleIds = [] }: { po
                     <div className="grid gap-8 md:grid-cols-[1fr_auto]">
                         <div className="space-y-3">
                             <div className="flex items-center gap-2.5">
-                                <div className="h-8 w-8 rounded-md bg-foreground flex items-center justify-center">
-                                    <Stethoscope className="h-4 w-4 text-background" />
+                                <div className="relative h-8 w-8 flex items-center justify-center shrink-0">
+                                    <Image src="/logo1.svg" alt="Logo" width={32} height={32} className="object-contain" />
                                 </div>
                                 <span className="font-bold text-base tracking-tight">The Health Journal</span>
                             </div>
@@ -459,7 +459,7 @@ export default function MedicalBlogUI({ posts, bookmarkedArticleIds = [] }: { po
                             </nav>
                         </div>
                     </div>
-                    
+
                     {/* Medical Disclaimer */}
                     <div className="mt-8 mb-4 p-4 rounded-lg bg-muted/50 border border-border/50 text-center">
                         <p className="text-xs text-muted-foreground leading-relaxed">

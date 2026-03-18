@@ -80,17 +80,20 @@ export function SocialShareSidebar({ title, className }: { title: string, classN
 
     const shareLinks = [
         {
-            name: "Share on X",
+            id: "x",
+            label: "X",
             href: `https://twitter.com/intent/tweet?text=${encodedTitle}&url=${encodedUrl}`,
             icon: <XIcon className="h-4 w-4" />,
         },
         {
-            name: "Share on Facebook",
+            id: "fb",
+            label: "Facebook",
             href: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
             icon: <FacebookIcon className="h-4 w-4" />,
         },
         {
-            name: "Share on LinkedIn",
+            id: "ln",
+            label: "LinkedIn",
             href: `https://www.linkedin.com/shareArticle?mini=true&url=${encodedUrl}&title=${encodedTitle}`,
             icon: <Linkedin className="h-4 w-4" />,
         },
@@ -118,11 +121,11 @@ export function SocialShareSidebar({ title, className }: { title: string, classN
         <div className={`flex items-center gap-3 ${className || 'flex-col'}`}>
             {shareLinks.map((link) => (
                 <button
-                    key={link.name}
+                    key={link.id}
                     onClick={() => window.open(link.href, "_blank", "noopener,noreferrer")}
-                    title={link.name}
                     className="flex items-center justify-center h-10 w-10 cursor-pointer rounded-full border border-border bg-card text-muted-foreground hover:text-foreground hover:border-foreground/30 hover:bg-muted transition-all duration-200"
                 >
+                    <span className="sr-only">Share via {link.label}</span>
                     {link.icon}
                 </button>
             ))}

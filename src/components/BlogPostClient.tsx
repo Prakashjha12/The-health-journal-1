@@ -46,7 +46,7 @@ export function ReadingProgressBar() {
     }, [])
 
     return (
-        <div className="fixed top-14 left-0 right-0 z-[40] h-[3px] bg-transparent">
+        <div className="fixed top-14 left-0 right-0 z-40 h-[3px] bg-transparent">
             <div
                 className="h-full bg-foreground/80 origin-left will-change-transform"
                 style={{ 
@@ -117,16 +117,14 @@ export function SocialShareSidebar({ title, className }: { title: string, classN
     return (
         <div className={`flex items-center gap-3 ${className || 'flex-col'}`}>
             {shareLinks.map((link) => (
-                <a
+                <button
                     key={link.name}
-                    href={link.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    onClick={() => window.open(link.href, "_blank", "noopener,noreferrer")}
                     title={link.name}
-                    className="flex items-center justify-center h-10 w-10 rounded-full border border-border bg-card text-muted-foreground hover:text-foreground hover:border-foreground/30 hover:bg-muted transition-all duration-200"
+                    className="flex items-center justify-center h-10 w-10 cursor-pointer rounded-full border border-border bg-card text-muted-foreground hover:text-foreground hover:border-foreground/30 hover:bg-muted transition-all duration-200"
                 >
                     {link.icon}
-                </a>
+                </button>
             ))}
             <button
                 onClick={handleCopy}

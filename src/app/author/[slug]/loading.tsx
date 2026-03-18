@@ -62,7 +62,7 @@ export default function Loading() {
             <div className="grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
               {[1, 2, 3].map((item) => (
                 <article key={item} className="flex flex-col rounded-2xl overflow-hidden bg-card border border-border/40 h-full">
-                  <div className="w-full aspect-[16/11] bg-muted" />
+                  <div className="w-full aspect-16/11 bg-muted" />
                   <div className="p-5 flex flex-col flex-1 space-y-3">
                     <div className="h-6 w-full bg-muted rounded-md mb-1" />
                     <div className="h-6 w-3/4 bg-muted rounded-md" />

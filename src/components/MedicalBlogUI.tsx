@@ -326,7 +326,7 @@ export default function MedicalBlogUI({ posts, bookmarkedArticleIds = [] }: { po
                                                                 <Link href={`/post/${article.slug}`} key={article.id} className="group">
                                                                     <article className="flex flex-col rounded-2xl overflow-hidden bg-card border border-border/40 shadow-[0_1px_3px_rgba(0,0,0,0.08)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.14)] dark:hover:shadow-[0_8px_30px_rgba(255,255,255,0.08)] hover:-translate-y-1 transition-all duration-300 ease-out h-full">
                                                                         {/* Card Image */}
-                                                                        <div className="relative w-full aspect-[16/11] bg-secondary overflow-hidden">
+                                                                        <div className="relative w-full aspect-16/11 bg-secondary overflow-hidden">
                                                                             {article.imageUrl ? (
                                                                                 <Image
                                                                                     src={article.imageUrl}
@@ -443,7 +443,7 @@ export default function MedicalBlogUI({ posts, bookmarkedArticleIds = [] }: { po
                         <div className="space-y-3">
                             <div className="flex items-center gap-2.5">
                                 <div className="relative h-8 w-8 flex items-center justify-center shrink-0">
-                                    <Image src="/logo1.svg" alt="Logo" width={32} height={32} className="object-contain" />
+                                    <Image src="/LOGO.webp" alt="Logo" width={32} height={32} className="object-contain" />
                                 </div>
                                 <span className="font-bold text-base tracking-tight">The Health Journal</span>
                             </div>

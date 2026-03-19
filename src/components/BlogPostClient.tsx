@@ -49,7 +49,7 @@ export function ReadingProgressBar() {
         <div className="fixed top-14 left-0 right-0 z-40 h-[3px] bg-transparent">
             <div
                 className="h-full bg-foreground/80 origin-left will-change-transform"
-                style={{ 
+                style={{
                     transform: `scaleX(${progress / 100})`,
                     transition: 'transform 100ms ease-out'
                 }}

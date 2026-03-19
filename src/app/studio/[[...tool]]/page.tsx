@@ -8,7 +8,7 @@
  */
 
 import { NextStudio } from 'next-sanity/studio'
-import config from '../../../../sanity.config'
+import config from '../../../../../sanity.config'
 import { auth, clerkClient } from "@clerk/nextjs/server"
 import { redirect } from "next/navigation"
 

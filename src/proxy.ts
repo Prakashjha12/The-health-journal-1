@@ -19,15 +19,9 @@ export default clerkMiddleware(async (auth, req) => {
 
   const { sessionClaims } = await auth();
 
-  // 2. Protect the Studio (Admin Only)
+  // 2. Protect the Studio by forcing authentication (Role check handles itself on the Studio Page)
   if (isStudioRoute(req)) {
-    const metadata = (sessionClaims?.metadata ?? {}) as { role?: string | string[] };
-    const role = metadata.role;
-    const isAdmin = Array.isArray(role) ? role.includes("admin") : role === "admin";
-
-    if (!isAdmin) {
-      return NextResponse.redirect(new URL("/", req.url));
-    }
+    await auth.protect()
   }
 
   // 3. Protect the Dashboard

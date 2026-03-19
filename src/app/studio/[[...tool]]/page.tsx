@@ -20,11 +20,18 @@ export default async function StudioPage() {
   const { userId } = await auth()
   if (!userId) redirect("/sign-in?redirect_url=/studio")
 
-  const client = await clerkClient()
-  const user = await client.users.getUser(userId)
+  let isSuperUser = false;
+  
+  try {
+    const client = await clerkClient()
+    const user = await client.users.getUser(userId)
 
-  const isSuperUser =
-    user.publicMetadata?.role === "admin" || user.publicMetadata?.isSuperUser === true
+    isSuperUser = user.publicMetadata?.role === "admin" || user.publicMetadata?.isSuperUser === true
+  } catch (error) {
+    console.error("Clerk API Error fetching user for Studio:", error)
+    // If Clerk throws an error (e.g., Secret Key mismatch), safely redirect instead of white-screening taking down the app
+    redirect("/")
+  }
 
   if (!isSuperUser) redirect("/")
 

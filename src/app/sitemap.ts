@@ -2,16 +2,15 @@ import { MetadataRoute } from 'next'
 import { client } from '@/sanity/lib/client'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  // Hardcode the fallback to .in to prevent any environment variable mishaps
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://thehealthjournal.in'
 
-  // Fetch post slugs and dates
   const postsQuery = `*[_type == "post" && defined(slug.current)] {
     "slug": slug.current,
     _updatedAt,
     publishedAt
   }`
 
-  // Fetch author slugs and dates
   const authorsQuery = `*[_type == "author" && defined(slug.current)] {
     "slug": slug.current,
     _updatedAt
@@ -36,7 +35,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.5,
   }))
 
-  // Static routes
   const staticRoutes: MetadataRoute.Sitemap = [
     {
       url: `${baseUrl}`,

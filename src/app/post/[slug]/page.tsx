@@ -15,11 +15,36 @@ import {
 } from '@/components/BlogPostClient'
 import { BookmarkButton } from '@/components/BookmarkButton'
 import { getBookmarks } from '@/lib/actions/user.actions'
-
-
-
-
+import { Metadata } from 'next'
 import { dataset, projectId } from '@/sanity/env'
+
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params
+  const isConfigured = projectId !== 'placeholder' && dataset !== 'placeholder'
+  const postResponse = isConfigured ? await sanityFetch({ query: postBySlugQuery, params: { slug } }) : null
+  const post = postResponse?.data
+
+  if (!post) return { title: "Post Not Found" }
+
+  const ogImage = post.image ? urlFor(post.image).width(1200).height(630).url() : '/LOGO.webp'
+
+  return {
+    title: `${post.title} | The Health Journal`,
+    description: post.summary || "Professional medical insights and health tips.",
+    alternates: {
+      canonical: `https://thehealthjournal.in/post/${slug}`, // Crucial for indexing
+    },
+    openGraph: {
+      title: post.title,
+      description: post.summary,
+      url: `https://thehealthjournal.in/post/${slug}`,
+      images: [{ url: ogImage }],
+      type: 'article',
+    },
+  }
+}
+
 
 export default async function PostPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
@@ -27,6 +52,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
   const postResponse = isConfigured ? await sanityFetch({ query: postBySlugQuery, params: { slug } }) : null
   const post = postResponse?.data || null
 
+  
   if (!post) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background text-foreground">

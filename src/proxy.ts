@@ -4,11 +4,13 @@ import { NextResponse } from "next/server"
 // 1. Define Public Routes (The "Gate" for Google and Auth)
 const isPublicRoute = createRouteMatcher([
   "/",
+  "/post(.*)",     // 🟢 CRITICAL: Allow Googlebot to see your blog posts!
+  "/articles(.*)", // 🟢 Add this if you have an /articles page
   "/sitemap.xml",
   "/robots.txt",
-  "/sign-in(.*)", // Allows all sub-pages under sign-in
-  "/sign-up(.*)",  // Allows the /verify-email-address route
-  "/studio(.*)" // Studio handles auth/role checks in its page route
+  "/sign-in(.*)", 
+  "/sign-up(.*)",  
+  "/studio(.*)" 
 ])
 
 const isDashboardRoute = createRouteMatcher(["/dashboard(.*)"])

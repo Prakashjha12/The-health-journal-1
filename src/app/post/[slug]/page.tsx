@@ -17,30 +17,39 @@ import { BookmarkButton } from '@/components/BookmarkButton'
 import { getBookmarks } from '@/lib/actions/user.actions'
 import { Metadata } from 'next'
 import { dataset, projectId } from '@/sanity/env'
-
+export const revalidate = 3600; // Revalidate the cache every 1 hour (3600 seconds)
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params
+  
+  // Fetch the post just for the metadata
+  // Next.js automatically dedupes this, so it won't slow down your app!
   const isConfigured = projectId !== 'placeholder' && dataset !== 'placeholder'
   const postResponse = isConfigured ? await sanityFetch({ query: postBySlugQuery, params: { slug } }) : null
   const post = postResponse?.data
 
-  if (!post) return { title: "Post Not Found" }
+  if (!post) {
+    return { title: "Post Not Found | The Health Journal" }
+  }
 
-  const ogImage = post.image ? urlFor(post.image).width(1200).height(630).url() : '/LOGO.webp'
+  // Use the image from Sanity for the Google/Social Media preview
+  const ogImage = post.image ? urlFor(post.image).width(1200).height(630).url() : '/default-og.jpg'
 
   return {
     title: `${post.title} | The Health Journal`,
-    description: post.summary || "Professional medical insights and health tips.",
-    alternates: {
-      canonical: `https://thehealthjournal.in/post/${slug}`, // Crucial for indexing
-    },
+    description: post.summary || "Read the latest health insights from Dr. Rajnandini Dubey at The Health Journal.",
     openGraph: {
       title: post.title,
       description: post.summary,
-      url: `https://thehealthjournal.in/post/${slug}`,
-      images: [{ url: ogImage }],
+      url: `https://thehealthjournal.co.in/post/${slug}`,
+      images: [{ url: ogImage, width: 1200, height: 630 }],
       type: 'article',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: post.title,
+      description: post.summary,
+      images: [ogImage],
     },
   }
 }

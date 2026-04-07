@@ -67,13 +67,13 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 export default async function PostPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   const isConfigured = projectId !== 'placeholder' && dataset !== 'placeholder'
-  const postResponse = isConfigured
-    ? await sanityFetch({
-        query: postBySlugQuery,
-        params: { slug },
-        next: { tags: ['posts', `post:${slug}`] },
-      })
-    : null
+  const postResponse = isConfigured 
+  ? await sanityFetch({ 
+      query: postBySlugQuery, 
+      params: { slug },
+      tags: ['posts', `post:${slug}`], // ✅ This matches the "Known Properties"
+    }) 
+  : null
   const post = postResponse?.data || null
 
   

@@ -7,24 +7,17 @@ const isPublicRoute = createRouteMatcher([
   "/sitemap.xml",
   "/robots.txt",
   "/sign-in(.*)", // Allows all sub-pages under sign-in
-  "/sign-up(.*)"  // Allows the /verify-email-address route
+  "/sign-up(.*)",  // Allows the /verify-email-address route
+  "/studio(.*)" // Studio handles auth/role checks in its page route
 ])
 
 const isDashboardRoute = createRouteMatcher(["/dashboard(.*)"])
-const isStudioRoute = createRouteMatcher(["/studio(.*)"])
 
 export default clerkMiddleware(async (auth, req) => {
   // If it's a public route, don't run any protection logic
   if (isPublicRoute(req)) return;
 
-  const { sessionClaims } = await auth();
-
-  // 2. Protect the Studio by forcing authentication (Role check handles itself on the Studio Page)
-  if (isStudioRoute(req)) {
-    await auth.protect()
-  }
-
-  // 3. Protect the Dashboard
+  // 2. Protect the Dashboard
   if (isDashboardRoute(req)) {
     await auth.protect()
   }

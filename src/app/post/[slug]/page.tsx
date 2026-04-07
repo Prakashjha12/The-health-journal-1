@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     ? await sanityFetch({
         query: postBySlugQuery,
         params: { slug },
-        next: { tags: ['posts', `post:${slug}`] },
+       tags: ['posts', `post:${slug}`],
       })
     : null
   const post = postResponse?.data

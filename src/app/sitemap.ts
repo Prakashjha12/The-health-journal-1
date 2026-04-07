@@ -2,8 +2,8 @@ import { MetadataRoute } from 'next'
 import { client } from '@/sanity/lib/client'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  // Hardcode the fallback to .in to prevent any environment variable mishaps
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://thehealthjournal.in'
+  // Use a strict canonical domain for SEO consistency.
+  const baseUrl = 'https://thehealthjournal.in'
 
   const postsQuery = `*[_type == "post" && defined(slug.current)] {
     "slug": slug.current,

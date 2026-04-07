@@ -25,7 +25,13 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   // Fetch the post just for the metadata
   // Next.js automatically dedupes this, so it won't slow down your app!
   const isConfigured = projectId !== 'placeholder' && dataset !== 'placeholder'
-  const postResponse = isConfigured ? await sanityFetch({ query: postBySlugQuery, params: { slug } }) : null
+  const postResponse = isConfigured
+    ? await sanityFetch({
+        query: postBySlugQuery,
+        params: { slug },
+        next: { tags: ['posts', `post:${slug}`] },
+      })
+    : null
   const post = postResponse?.data
 
   if (!post) {
@@ -38,10 +44,13 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return {
     title: `${post.title} | The Health Journal`,
     description: post.summary || "Read the latest health insights from Dr. Rajnandini Dubey at The Health Journal.",
+    alternates: {
+      canonical: `https://thehealthjournal.in/post/${slug}`,
+    },
     openGraph: {
       title: post.title,
       description: post.summary,
-      url: `https://thehealthjournal.co.in/post/${slug}`,
+      url: `https://thehealthjournal.in/post/${slug}`,
       images: [{ url: ogImage, width: 1200, height: 630 }],
       type: 'article',
     },
@@ -58,7 +67,13 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 export default async function PostPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   const isConfigured = projectId !== 'placeholder' && dataset !== 'placeholder'
-  const postResponse = isConfigured ? await sanityFetch({ query: postBySlugQuery, params: { slug } }) : null
+  const postResponse = isConfigured
+    ? await sanityFetch({
+        query: postBySlugQuery,
+        params: { slug },
+        next: { tags: ['posts', `post:${slug}`] },
+      })
+    : null
   const post = postResponse?.data || null
 
   

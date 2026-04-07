@@ -4,6 +4,9 @@ import { parseBody } from 'next-sanity/webhook'
 
 type WebhookPayload = {
   _type: string
+  slug?: {
+    current?: string
+  }
 }
 
 export async function POST(req: NextRequest) {
@@ -21,9 +24,19 @@ export async function POST(req: NextRequest) {
       return new Response('Bad Request', { status: 400 })
     }
 
-    // Revalidate the tag matching the document type (e.g. "post")
-    // @ts-expect-error - Next.js 16 type definitions expect a second profile argument
-    revalidateTag(body._type)
+    if (body._type === 'post') {
+      // Revalidate post listing + specific post page cache tag.
+      // @ts-expect-error - Next.js 16 type definitions expect a second profile argument
+      revalidateTag('posts')
+      if (body.slug?.current) {
+        // @ts-expect-error - Next.js 16 type definitions expect a second profile argument
+        revalidateTag(`post:${body.slug.current}`)
+      }
+    } else {
+      // Keep previous behavior for non-post document types.
+      // @ts-expect-error - Next.js 16 type definitions expect a second profile argument
+      revalidateTag(body._type)
+    }
 
     return NextResponse.json({ 
       status: 200, 

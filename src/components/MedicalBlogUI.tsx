@@ -183,11 +183,27 @@ export default function MedicalBlogUI({ posts, bookmarkedArticleIds = [] }: { po
                         className="fill-black/[0.15] dark:fill-white/[0.15] text-black/[0.15] dark:text-white/[0.15] [mask-image:linear-gradient(to_bottom,black_30%,transparent)] "
                     />
                     <div className="relative z-10 max-w-[1200px] mx-auto px-6 cursor-default">
-                        <h1 className="text-[32px] md:text-[58px] font-extrabold leading-[1.15] tracking-tight mb-6">
-                            Got a Health question?
-                            <br />
-                            Ask The Health Journal.
-                        </h1>
+                        {/* --- Header Section --- */}
+{/* --- Identity & Hero Section --- */}
+<div className="mb-10 px-4 md:px-0">
+    {/* 🟢 Main H1: High contrast for both modes */}
+    <h1 className="text-[36px] md:text-[68px] font-extrabold leading-[1.1] tracking-tighter 
+                   text-zinc-900 dark:text-zinc-50 transition-colors duration-300">
+        The Health Journal
+    </h1>
+    
+    {/* 🔵 Sub-headline: Subtle gray to create visual hierarchy */}
+    <p className="text-[18px] md:text-[26px] mt-4 font-medium leading-tight 
+                  text-zinc-600 dark:text-zinc-400 max-w-2xl">
+        Got a health question? 
+        <span className="block md:inline ml-0 md:ml-2 text-primary-600 dark:text-blue-400">
+            Get evidence-based answers.
+        </span>
+    </p>
+
+    {/* ✨ Optional: Subtle Divider for "System Separation" */}
+    <div className="mt-8 h-[1px] w-full bg-zinc-200 dark:bg-zinc-800" />
+</div>
 
                         {/* Search Bar */}
                         <div className="flex items-center gap-0 max-w-[500px] mb-5">

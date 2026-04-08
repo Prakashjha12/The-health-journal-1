@@ -25,6 +25,12 @@ export const metadata: Metadata = {
   icons: {
     icon: "/fevicon.svg",
   },
+  openGraph: {
+    title: "The Health Journal",
+    siteName: "The Health Journal", 
+    url: "https://thehealthjournal.in",
+    type: "website",
+  },
 };
 
 export default function RootLayout({

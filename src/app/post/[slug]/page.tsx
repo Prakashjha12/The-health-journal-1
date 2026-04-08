@@ -243,6 +243,8 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
                 <p className="text-sm font-semibold">
                   Better Health with The Health Journal
                 </p>
+                
+                  
               </div>
             </aside>
           </div>

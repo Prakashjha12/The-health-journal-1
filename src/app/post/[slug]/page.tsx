@@ -17,6 +17,12 @@ import { BookmarkButton } from '@/components/BookmarkButton'
 import { getBookmarks } from '@/lib/actions/user.actions'
 import { Metadata } from 'next'
 import { dataset, projectId } from '@/sanity/env'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion'
 export const revalidate = 3600; // Revalidate the cache every 1 hour (3600 seconds)
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -44,6 +50,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return {
     title: `${post.title} | The Health Journal`,
     description: post.summary || "Read the latest health insights from Dr. Rajnandini Dubey at The Health Journal.",
+    keywords: post.tags?.join(', ') || 'health, wellness, physio',
     alternates: {
       canonical: `https://thehealthjournal.in/post/${slug}`,
     },
@@ -63,6 +70,32 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   }
 }
 
+
+const portableTextComponents = {
+  types: {
+    image: ({ value }: { value: { asset: object; alt?: string } }) => {
+      if (!value?.asset) return null
+      return (
+        <div className="my-10 rounded-xl overflow-hidden border border-border">
+          <Image
+            src={urlFor(value).width(1200).url()}
+            alt={value.alt || 'The Health Journal Image'}
+            width={1200}
+            height={675}
+            className="w-full h-auto object-cover"
+          />
+        </div>
+      )
+    },
+  },
+  block: {
+    blockquote: ({ children }: { children?: React.ReactNode }) => (
+      <blockquote className="my-8 border-l-4 border-primary bg-zinc-100/80 dark:bg-zinc-900/50 py-6 pl-8 pr-6 rounded-r-xl shadow-sm italic text-zinc-800 dark:text-zinc-200 text-lg leading-relaxed">
+        {children}
+      </blockquote>
+    ),
+  },
+}
 
 export default async function PostPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
@@ -195,12 +228,12 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
                                 prose-p:leading-[1.8] prose-p:text-[15px] prose-p:text-foreground/85
                                 prose-li:text-[15px] prose-li:leading-[1.8]
                                 prose-a:text-foreground prose-a:underline prose-a:underline-offset-2 prose-a:decoration-foreground/30 hover:prose-a:decoration-foreground
-                                prose-blockquote:border-l-foreground/20 prose-blockquote:text-muted-foreground prose-blockquote:not-italic
+                                prose-blockquote:not-prose
                                 prose-img:rounded-xl prose-img:border prose-img:border-border
                                 prose-code:text-sm prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:before:content-none prose-code:after:content-none
                                 prose-strong:text-foreground prose-strong:font-semibold
                             ">
-                <PortableText value={post.body} />
+                <PortableText value={post.body} components={portableTextComponents} />
               </div>
 
               {/* Mobile Social Share */}
@@ -249,6 +282,29 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
             </aside>
           </div>
         </div>
+
+        {/* ─── FAQ SECTION ─── */}
+        {post.faqs && post.faqs.length > 0 && (
+          <div className="max-w-[720px] mx-auto px-6 pb-16">
+            <h2 className="text-2xl font-bold tracking-tight mb-6">Frequently Asked Questions</h2>
+            <Accordion type="single" collapsible className="w-full space-y-2">
+              {post.faqs.map((faq: { question: string; answer: string }, index: number) => (
+                <AccordionItem
+                  key={index}
+                  value={`faq-${index}`}
+                  className="border border-border rounded-xl px-5 data-[state=open]:bg-muted/40 transition-colors"
+                >
+                  <AccordionTrigger className="text-[15px] font-semibold text-foreground text-left hover:no-underline py-4">
+                    {faq.question}
+                  </AccordionTrigger>
+                  <AccordionContent className="text-[14px] leading-[1.8] text-foreground/80 pb-4">
+                    {faq.answer}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </div>
+        )}
 
         {/* ─── AUTHOR & REVIEWER PROFILES ─── */}
         <div className="max-w-[1000px] mx-auto px-6 pb-20 mt-10">

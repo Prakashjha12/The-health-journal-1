@@ -59,7 +59,12 @@ export const postBySlugQuery = groq`*[_type == "post" && slug.current == $slug][
     instagram,
     website
   },
-  body
+  body,
+  faqs[] {
+    question,
+    answer
+  },
+  tags
 }`
 
 export const recentPostsQuery = groq`*[_type == "post" && defined(slug.current) && slug.current != $slug] | order(publishedAt desc)[0...3] {

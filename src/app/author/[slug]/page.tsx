@@ -16,7 +16,7 @@ import { FormattedDate } from "@/components/ui/FormattedDate"
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const authorResponse = await sanityFetch({ query: authorBySlugQuery, params: { slug } });
+  const authorResponse = await sanityFetch({ query: authorBySlugQuery, params: { slug } as any });
   const author = authorResponse?.data;
 
   if (!author) return { title: "Author Not Found" };
@@ -38,7 +38,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 export default async function AuthorPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   const isConfigured = projectId !== 'placeholder' && dataset !== 'placeholder'
-  const authorResponse = isConfigured ? await sanityFetch({ query: authorBySlugQuery, params: { slug } }) : null
+  const authorResponse = isConfigured ? await sanityFetch({ query: authorBySlugQuery, params: { slug } as any }) : null
   const author = authorResponse?.data || null
 
   if (!author) {

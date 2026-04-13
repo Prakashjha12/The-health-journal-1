@@ -36,7 +36,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const postResponse = isConfigured
     ? await sanityFetch({
       query: postBySlugQuery,
-      params: { slug },
+      params: { slug } as any,
       tags: ['posts', `post:${slug}`],
     })
     : null
@@ -131,7 +131,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
   const postResponse = isConfigured
     ? await sanityFetch({
       query: postBySlugQuery,
-      params: { slug },
+      params: { slug } as any,
       tags: ['posts', `post:${slug}`], // ✅ This matches the "Known Properties"
     })
     : null
@@ -155,7 +155,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
   const bookmarkedArticleIds = await getBookmarks()
   const isBookmarked = bookmarkedArticleIds.includes(post._id)
 
-  const recentPostsResponse = isConfigured ? await sanityFetch({ query: recentPostsQuery, params: { slug } }) : { data: [] }
+  const recentPostsResponse = isConfigured ? await sanityFetch({ query: recentPostsQuery, params: { slug } as any }) : { data: [] }
   const recentPostsData = recentPostsResponse?.data || []
   const recentArticles = recentPostsData.map((rp: any, index: number) => {
     const displayDate = rp.publishedAt || rp._createdAt || "2024-01-01"

@@ -45,7 +45,7 @@ export default async function Home({
   const postsResponse = isConfigured
     ? await sanityFetch({
       query: searchPostsQuery,
-      params: { query, category },
+      params: { query, category } as any,
     })
     : { data: [] }
   const posts: Post[] = postsResponse.data

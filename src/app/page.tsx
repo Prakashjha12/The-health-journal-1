@@ -2,7 +2,7 @@ import { sanityFetch } from '@/sanity/lib/live'
 import { postsQuery } from '@/sanity/lib/queries'
 import MedicalBlogUI from '@/components/MedicalBlogUI'
 import { getBookmarks } from '@/lib/actions/user.actions'
-
+import { urlFor } from '@/sanity/lib/image'
 
 
 
@@ -48,10 +48,25 @@ export default async function Home() {
 
   // Fetch bookmarks
   const bookmarkedArticleIds: string[] = await getBookmarks()
+  const featuredPost = posts[0] // The first post is the "Hero"
+  const lcpImageUrl = featuredPost?.image
+    ? urlFor(featuredPost.image).width(1000).quality(80).auto('format').url()
+    : null
 
   // Pass it to the showcase Next.js Client Component
   return (
     <>
+      {/* ─── ADD THIS TO TELL GOOGLE TO DOWNLOAD THE IMAGE NOW ─── */}
+      {lcpImageUrl && (
+        <head>
+          <link
+            rel="preload"
+            as="image"
+            href={lcpImageUrl}
+            fetchPriority="high"
+          />
+        </head>
+      )}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

@@ -56,6 +56,7 @@ export function BookmarkButton({ articleId, initialIsBookmarked = false, classNa
                 <Button
                     variant="secondary"
                     size={children ? "default" : "icon"}
+                    aria-label={isBookmarked ? "Remove from bookmarks" : "Save to bookmarks"}
                     className={cn(
                         !children && "h-8 w-8 rounded-full",
                         "backdrop-blur-sm shadow-sm transition-all",
@@ -66,7 +67,7 @@ export function BookmarkButton({ articleId, initialIsBookmarked = false, classNa
                     )}
                     onClick={(e) => {
                         handleBookmark(e)
-                        
+
                         // Fire confetti manually only when toggling TO saved state
                         if (!isBookmarked) {
                             const rect = e.currentTarget.getBoundingClientRect()
@@ -95,6 +96,7 @@ export function BookmarkButton({ articleId, initialIsBookmarked = false, classNa
                 <Button
                     variant="secondary"
                     size={children ? "default" : "icon"}
+                    aria-label="Sign in to save article"
                     className={cn(
                         !children && "h-8 w-8 rounded-full",
                         "backdrop-blur-sm shadow-sm transition-all",

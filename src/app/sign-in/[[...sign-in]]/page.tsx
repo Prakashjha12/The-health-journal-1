@@ -1,10 +1,19 @@
 import { SignIn } from "@clerk/nextjs"
+import { Metadata } from "next"
+
+// THIS IS THE FIX: It tells all search engines to ignore this page
+export const metadata: Metadata = {
+    robots: {
+        index: false,
+        follow: false,
+    },
+}
 
 export default function SignInPage() {
     return (
         <div className="flex min-h-screen items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-zinc-50 dark:bg-black">
             <div className="max-w-md w-full space-y-8">
-                <SignIn 
+                <SignIn
                     appearance={{
                         elements: {
                             formButtonPrimary: 'bg-zinc-900 dark:bg-zinc-50 text-zinc-50 dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-200',

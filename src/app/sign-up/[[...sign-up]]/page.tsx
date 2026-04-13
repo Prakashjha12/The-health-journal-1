@@ -1,10 +1,19 @@
 import { SignUp } from "@clerk/nextjs"
+import { Metadata } from "next"
+
+// THIS IS THE FIX: It tells all search engines to ignore this page
+export const metadata: Metadata = {
+    robots: {
+        index: false,
+        follow: false,
+    },
+}
 
 export default function SignUpPage() {
     return (
         <div className="flex min-h-screen items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-zinc-50 dark:bg-black">
             <div className="max-w-md w-full space-y-8">
-                <SignUp 
+                <SignUp
                     appearance={{
                         elements: {
                             formButtonPrimary: 'bg-zinc-900 dark:bg-zinc-50 text-zinc-50 dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-200',
@@ -27,7 +36,7 @@ export default function SignUpPage() {
                         consent: true
                     }}
                 />
-                
+
                 {/* Manual Disclaimer for UI clarity as Clerk Custom fields are often managed via Dashboard */}
                 <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
                     <p className="text-[11px] text-blue-700 dark:text-blue-300 leading-relaxed text-center">

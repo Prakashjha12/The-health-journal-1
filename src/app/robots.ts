@@ -7,7 +7,14 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: ['/studio/', '/api/'],
+      disallow: [
+        '/studio/',       // Sanity Studio
+        '/api/',          // Internal API routes
+        '/sign-in',       // Clerk Sign-in page
+        '/sign-up',       // Clerk Sign-up page
+        '/user-profile',  // Clerk User Profile
+        '/_clerk',        // Internal Clerk routes
+      ],
     },
     sitemap: `${baseUrl}/sitemap.xml`,
   }

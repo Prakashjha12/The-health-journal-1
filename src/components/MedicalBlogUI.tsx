@@ -121,10 +121,9 @@ export default function MedicalBlogUI({ posts, bookmarkedArticleIds = [] }: { po
     }, [])
 
     const mappedArticles = React.useMemo(() =>
-        posts.map((post, index) => {
+        posts.map((post) => {
             const displayDate = post.publishedAt || post._createdAt || new Date("2024-01-01").toISOString()
             const readingTime = calculateReadingTime(post.body)
-            // Use the first assigned category, or fallback to 'Health' to prevent errors if empty
             const postCategory = post.categories && post.categories.length > 0 && post.categories[0].title
                 ? post.categories[0].title
                 : "Health"
@@ -133,10 +132,13 @@ export default function MedicalBlogUI({ posts, bookmarkedArticleIds = [] }: { po
                 id: post._id,
                 title: post.title,
                 slug: post.slug?.current || '#',
-                excerpt: "Read this full article in our Medical Insights portal. Discover evidence-based insights and latest research findings.",
+                excerpt: "Read this full article in our Medical Insights portal.",
                 category: postCategory,
                 readTime: `${readingTime} min read`,
                 date: new Date(displayDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+                // ─── ADD THIS LINE TO FIX THE ERROR ───
+                image: post.image,
+                // Keep this for your standard grid cards
                 imageUrl: post.image ? urlFor(post.image).width(800).height(500).url() : null
             }
         }),
@@ -184,26 +186,26 @@ export default function MedicalBlogUI({ posts, bookmarkedArticleIds = [] }: { po
                     />
                     <div className="relative z-10 max-w-[1200px] mx-auto px-6 cursor-default">
                         {/* --- Header Section --- */}
-{/* --- Identity & Hero Section --- */}
-<div className="mb-10 px-4 md:px-0">
-    {/* 🟢 Main H1: High contrast for both modes */}
-    <h1 className="text-[36px] md:text-[68px] font-extrabold leading-[1.1] tracking-tighter 
+                        {/* --- Identity & Hero Section --- */}
+                        <div className="mb-10 px-4 md:px-0">
+                            {/* 🟢 Main H1: High contrast for both modes */}
+                            <h1 className="text-[36px] md:text-[68px] font-extrabold leading-[1.1] tracking-tighter 
                    text-zinc-900 dark:text-zinc-50 transition-colors duration-300">
-        The Health Journal
-    </h1>
-    
-    {/* 🔵 Sub-headline: Subtle gray to create visual hierarchy */}
-    <p className="text-[18px] md:text-[26px] mt-4 font-medium leading-tight 
-                  text-zinc-600 dark:text-zinc-400 max-w-2xl">
-        Got a health question? 
-        <span className="block md:inline ml-0 md:ml-2 text-primary-600 dark:text-blue-400">
-            Get evidence-based answers.
-        </span>
-    </p>
+                                The Health Journal
+                            </h1>
 
-    {/* ✨ Optional: Subtle Divider for "System Separation" */}
-    <div className="mt-8 h-[1px] w-full bg-zinc-200 dark:bg-zinc-800" />
-</div>
+                            {/* 🔵 Sub-headline: Subtle gray to create visual hierarchy */}
+                            <p className="text-[18px] md:text-[26px] mt-4 font-medium leading-tight 
+                  text-zinc-600 dark:text-zinc-400 max-w-2xl">
+                                Got a health question?
+                                <span className="block md:inline ml-0 md:ml-2 text-primary-600 dark:text-blue-400">
+                                    Get evidence-based answers.
+                                </span>
+                            </p>
+
+                            {/* ✨ Optional: Subtle Divider for "System Separation" */}
+                            <div className="mt-8 h-[1px] w-full bg-zinc-200 dark:bg-zinc-800" />
+                        </div>
 
                         {/* Search Bar */}
                         <div className="flex items-center gap-0 max-w-[500px] mb-5">
@@ -274,12 +276,14 @@ export default function MedicalBlogUI({ posts, bookmarkedArticleIds = [] }: { po
                                                         <div className="relative w-full aspect-video bg-secondary overflow-hidden -mb-px">
                                                             {featured.imageUrl ? (
                                                                 <Image
-                                                                    src={featured.imageUrl}
+                                                                    // This is now "Visible" to the code because of the change above
+                                                                    src={featured.image ? urlFor(featured.image).width(1000).quality(80).auto('format').url() : ""}
                                                                     alt={featured.title}
                                                                     fill
                                                                     className="object-cover"
-                                                                    sizes="(max-width: 768px) 100vw, (min-width: 1024px) 60vw, 100vw"
                                                                     priority
+                                                                    fetchPriority="high"
+                                                                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 70vw, 1000px"
                                                                 />
                                                             ) : (
                                                                 <div className="flex items-center justify-center h-full">

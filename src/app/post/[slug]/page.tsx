@@ -27,16 +27,16 @@ export const revalidate = 3600; // Revalidate the cache every 1 hour (3600 secon
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params
-  
+
   // Fetch the post just for the metadata
   // Next.js automatically dedupes this, so it won't slow down your app!
   const isConfigured = projectId !== 'placeholder' && dataset !== 'placeholder'
   const postResponse = isConfigured
     ? await sanityFetch({
-        query: postBySlugQuery,
-        params: { slug },
-       tags: ['posts', `post:${slug}`],
-      })
+      query: postBySlugQuery,
+      params: { slug },
+      tags: ['posts', `post:${slug}`],
+    })
     : null
   const post = postResponse?.data
 
@@ -100,16 +100,16 @@ const portableTextComponents = {
 export default async function PostPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   const isConfigured = projectId !== 'placeholder' && dataset !== 'placeholder'
-  const postResponse = isConfigured 
-  ? await sanityFetch({ 
-      query: postBySlugQuery, 
+  const postResponse = isConfigured
+    ? await sanityFetch({
+      query: postBySlugQuery,
       params: { slug },
       tags: ['posts', `post:${slug}`], // ✅ This matches the "Known Properties"
-    }) 
-  : null
+    })
+    : null
   const post = postResponse?.data || null
 
-  
+
   if (!post) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
@@ -194,16 +194,21 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
         </div>
 
         {/* ─── FEATURED IMAGE ─── */}
+        {/* ─── FEATURED IMAGE ─── */}
         {post.image && (
           <div className="max-w-[1200px] mx-auto px-6 mb-10">
             <div className="rounded-2xl overflow-hidden border border-border bg-secondary">
               <Image
-                src={urlFor(post.image)?.url() as string}
+                // ─── OPTIMIZATION: 1000px width + 80% quality ───
+                src={urlFor(post.image).width(1000).quality(80).auto('format').url()}
                 alt={post.image.alt || post.title}
                 width={1200}
                 height={600}
                 className="w-full h-auto object-cover max-h-[500px]"
+                // ─── CRITICAL FOR LCP ───
                 priority
+                fetchPriority="high"
+                sizes="(max-width: 768px) 100vw, 1200px"
               />
             </div>
           </div>
@@ -276,8 +281,8 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
                 <p className="text-sm font-semibold">
                   Better Health with The Health Journal
                 </p>
-                
-                  
+
+
               </div>
             </aside>
           </div>
@@ -483,7 +488,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
                 <Link href="/#articles" className="block text-muted-foreground hover:text-foreground transition-colors">Articles</Link>
               </nav>
             </div>
-            
+
             {/* Medical Disclaimer */}
             <div className="mt-8 mb-4 p-4 rounded-lg bg-muted/50 border border-border/50 text-center">
               <p className="text-xs text-muted-foreground leading-relaxed">

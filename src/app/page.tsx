@@ -34,7 +34,7 @@ export default async function Home() {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    "name": "The Health Journal", 
+    "name": "The Health Journal",
     "url": "https://thehealthjournal.in/",
     "alternateName": ["THJ", " The Health Journal"]
   };

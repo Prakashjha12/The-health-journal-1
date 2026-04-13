@@ -12,13 +12,14 @@ import { SpeedInsights } from '@vercel/speed-insights/next';
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  display: 'swap', // This is the performance booster
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  display: 'swap', // Ensures code blocks/mono text don't block render
 });
-
 export const metadata: Metadata = {
   title: "The Health Journal",
   description: "A modern blog for health and wellness",
@@ -27,7 +28,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "The Health Journal",
-    siteName: "The Health Journal", 
+    siteName: "The Health Journal",
     url: "https://thehealthjournal.in",
     type: "website",
   },

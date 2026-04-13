@@ -41,13 +41,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date().toISOString(),
       changeFrequency: 'daily',
       priority: 1,
-    },
-    {
-      url: `${baseUrl}/articles`,
-      lastModified: new Date().toISOString(),
-      changeFrequency: 'daily',
-      priority: 0.9,
-    },
+    }
   ]
 
   return [...staticRoutes, ...postEntries, ...authorEntries]

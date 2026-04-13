@@ -1,0 +1,9 @@
+{
+    "redirects": [
+        {
+            "source": "/post/the-biggest-challenges-in-implementing-ai-in-healthcare",
+            "destination": "/post/ai-in-healthcare",
+            "permanent": true
+        }
+    ]
+}

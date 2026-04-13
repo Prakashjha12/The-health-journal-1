@@ -4,6 +4,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { Stethoscope, BookmarkX } from "lucide-react"
 import { getBookmarks } from "@/lib/actions/user.actions"
+import { FormattedDate } from "@/components/ui/FormattedDate"
 
 interface SavedArticle {
     _id: string
@@ -72,7 +73,7 @@ export default async function SavedArticles() {
                                 {article.title}
                             </h3>
                             <div className="mt-auto flex items-center justify-between text-[11px] text-zinc-500 uppercase tracking-wider font-semibold">
-                                <span>{new Date(article.publishedAt).toLocaleDateString()}</span>
+                                <span><FormattedDate date={article.publishedAt} /></span>
                                 <span className="px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
                                     Saved
                                 </span>

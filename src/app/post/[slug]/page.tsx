@@ -23,6 +23,8 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion'
+import { Copyright } from "@/components/ui/Copyright"
+import { FormattedDate } from "@/components/ui/FormattedDate"
 export const revalidate = 3600; // Revalidate the cache every 1 hour (3600 seconds)
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -95,6 +97,32 @@ const portableTextComponents = {
       </blockquote>
     ),
   },
+  marks: {
+    link: ({ value, children }: { value?: { href: string }; children: React.ReactNode }) => {
+      const href = value?.href || ''
+      const isInternal = href.startsWith('/') || href.startsWith('https://thehealthjournal.in')
+
+      if (isInternal) {
+        const path = href.replace('https://thehealthjournal.in', '')
+        return (
+          <Link href={path} className="text-primary hover:underline underline-offset-4 decoration-primary/40 transition-all font-medium">
+            {children}
+          </Link>
+        )
+      }
+
+      return (
+        <a 
+          href={href} 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          className="text-primary hover:underline underline-offset-4 decoration-primary/40 transition-all font-medium"
+        >
+          {children}
+        </a>
+      )
+    },
+  },
 }
 
 export default async function PostPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -130,7 +158,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
   const recentPostsResponse = isConfigured ? await sanityFetch({ query: recentPostsQuery, params: { slug } }) : { data: [] }
   const recentPostsData = recentPostsResponse?.data || []
   const recentArticles = recentPostsData.map((rp: any, index: number) => {
-    const displayDate = rp.publishedAt || rp._createdAt || new Date("2024-01-01").toISOString()
+    const displayDate = rp.publishedAt || rp._createdAt || "2024-01-01"
     const readTimeVal = calculateReadingTime(rp.body)
     const postCategory = rp.categories && rp.categories.length > 0 && rp.categories[0].title
       ? rp.categories[0].title
@@ -141,7 +169,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
       slug: rp.slug?.current || '#',
       category: postCategory,
       readTime: `${readTimeVal} min read`,
-      date: new Date(displayDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      date: displayDate,
       imageUrl: rp.image ? urlFor(rp.image).width(800).height(500).url() : null
     }
   })
@@ -153,6 +181,37 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
       <Navbar />
 
       <main className="flex-1">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "BlogPosting",
+              "headline": post.title,
+              "description": post.summary,
+              "image": post.image ? [urlFor(post.image).width(1200).height(630).url()] : [],
+              "datePublished": post.publishedAt || post._createdAt,
+              "dateModified": post._updatedAt || post.publishedAt || post._createdAt,
+              "author": [{
+                "@type": "Person",
+                "name": post.author?.name || "The Health Journal Team",
+                "url": post.author?.slug ? `https://thehealthjournal.in/author/${post.author.slug}` : "https://thehealthjournal.in"
+              }],
+              "publisher": {
+                "@type": "Organization",
+                "name": "The Health Journal",
+                "logo": {
+                  "@type": "ImageObject",
+                  "url": "https://thehealthjournal.in/LOGO.webp"
+                }
+              },
+              "mainEntityOfPage": {
+                "@type": "WebPage",
+                "@id": `https://thehealthjournal.in/post/${slug}`
+              }
+            })
+          }}
+        />
         {/* ─── BREADCRUMBS ─── */}
         <div className="max-w-[1200px] mx-auto px-6 pt-6">
           <nav className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -173,12 +232,8 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
 
             <div className="mt-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-                <time dateTime={post.publishedAt || post._createdAt} className="font-medium" suppressHydrationWarning>
-                  {new Date(post.publishedAt || post._createdAt).toLocaleDateString('en-US', {
-                    month: 'long',
-                    day: 'numeric',
-                    year: 'numeric'
-                  })}
+                <time dateTime={post.publishedAt || post._createdAt} className="font-medium">
+                  <FormattedDate date={post.publishedAt || post._createdAt} options={{ month: 'long', day: 'numeric', year: 'numeric' }} />
                 </time>
                 <span className="w-1 h-1 rounded-full bg-muted-foreground/40" />
                 <ReadingTimeBadge minutes={readingTime} />
@@ -454,8 +509,8 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
                       <h3 className="font-semibold text-base leading-snug tracking-tight mb-2 group-hover:text-foreground/80 transition-colors line-clamp-2">
                         {article.title}
                       </h3>
-                      <p className="text-xs text-muted-foreground mt-auto" suppressHydrationWarning>
-                        {article.date} &bull; {article.readTime}
+                      <p className="text-xs text-muted-foreground mt-auto">
+                        <FormattedDate date={article.date} /> &bull; {article.readTime}
                       </p>
                     </div>
                   </article>
@@ -498,7 +553,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
 
           </div>
           <div className="mt-8 pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
-            <p suppressHydrationWarning>&copy; {new Date().getFullYear()} — The Health Journal. All Rights Reserved.</p>
+            <p><Copyright /></p>
             <p>
               Made by <a href="https://www.prakashjha.com" target="_blank" rel="noopener noreferrer" className="font-medium hover:text-foreground transition-colors underline underline-offset-4">Prakashjha</a>
             </p>

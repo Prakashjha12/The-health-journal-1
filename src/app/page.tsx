@@ -1,15 +1,9 @@
 import { sanityFetch } from '@/sanity/lib/live'
-import { postsQuery } from '@/sanity/lib/queries'
+import { searchPostsQuery } from '@/sanity/lib/queries'
 import MedicalBlogUI from '@/components/MedicalBlogUI'
 import { getBookmarks } from '@/lib/actions/user.actions'
 import { urlFor } from '@/sanity/lib/image'
 
-
-
-
-// Define the type for a single post based on the postsQuery
-// Assuming postsQuery returns an array of objects with at least _id, title, and slug.current
-// You might need to adjust this interface based on the actual structure of your Sanity posts.
 interface Post {
   _id: string;
   title: string;
@@ -18,6 +12,7 @@ interface Post {
   };
   publishedAt?: string;
   _createdAt?: string;
+  categories?: { title: string }[];
   image?: {
     _type: 'image';
     asset: {
@@ -30,7 +25,13 @@ interface Post {
 
 import { dataset, projectId } from '@/sanity/env'
 
-export default async function Home() {
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<{ query?: string; category?: string }>;
+}) {
+  const { query = "", category = "All" } = await searchParams;
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "WebSite",
@@ -42,7 +43,10 @@ export default async function Home() {
   const isConfigured = projectId !== 'placeholder' && dataset !== 'placeholder'
 
   const postsResponse = isConfigured
-    ? await sanityFetch({ query: postsQuery })
+    ? await sanityFetch({
+      query: searchPostsQuery,
+      params: { query, category },
+    })
     : { data: [] }
   const posts: Post[] = postsResponse.data
 
@@ -71,7 +75,12 @@ export default async function Home() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <MedicalBlogUI posts={posts} bookmarkedArticleIds={bookmarkedArticleIds} />
+      <MedicalBlogUI
+        posts={posts}
+        bookmarkedArticleIds={bookmarkedArticleIds}
+        initialQuery={query}
+        initialCategory={category}
+      />
     </>
   );
 }

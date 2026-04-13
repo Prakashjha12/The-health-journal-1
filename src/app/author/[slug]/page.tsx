@@ -11,6 +11,8 @@ import { BookmarkButton } from '@/components/BookmarkButton'
 import { getBookmarks } from '@/lib/actions/user.actions'
 import { dataset, projectId } from '@/sanity/env'
 import { Metadata } from 'next'
+import { Copyright } from "@/components/ui/Copyright"
+import { FormattedDate } from "@/components/ui/FormattedDate"
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -178,7 +180,7 @@ export default async function AuthorPage({ params }: { params: Promise<{ slug: s
             <div className="grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
               {author.posts.map((post: any, index: number) => {
                 const readTimeVal = calculateReadingTime(post.body)
-                const displayDate = new Date(post.publishedAt || post._createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                const displayDate = post.publishedAt || post._createdAt || "2024-01-01"
                 const category = post.categories && post.categories.length > 0 && post.categories[0].title
                   ? post.categories[0].title
                   : "Health"
@@ -218,8 +220,8 @@ export default async function AuthorPage({ params }: { params: Promise<{ slug: s
                         <h3 className="font-semibold text-lg leading-snug tracking-tight mb-3 group-hover:text-primary transition-colors line-clamp-2">
                           {post.title}
                         </h3>
-                        <p className="text-xs font-medium text-muted-foreground mt-auto" suppressHydrationWarning>
-                          {displayDate} &bull; {readTimeVal} min read
+                        <p className="text-xs font-medium text-muted-foreground mt-auto">
+                          <FormattedDate date={displayDate} /> &bull; {readTimeVal} min read
                         </p>
                       </div>
                     </article>
@@ -247,7 +249,7 @@ export default async function AuthorPage({ params }: { params: Promise<{ slug: s
           </div>
 
           <div className="mt-8 pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
-            <p suppressHydrationWarning>&copy; {new Date().getFullYear()} — The Health Journal. All Rights Reserved.</p>
+            <p><Copyright /></p>
             <p>
               Made by <a href="https://www.prakashjha.com" target="_blank" rel="noopener noreferrer" className="font-medium hover:text-foreground transition-colors underline underline-offset-4">Prakashjha</a>
             </p>

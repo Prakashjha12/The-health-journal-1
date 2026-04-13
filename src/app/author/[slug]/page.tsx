@@ -10,6 +10,28 @@ import { calculateReadingTime } from '@/lib/utils'
 import { BookmarkButton } from '@/components/BookmarkButton'
 import { getBookmarks } from '@/lib/actions/user.actions'
 import { dataset, projectId } from '@/sanity/env'
+import { Metadata } from 'next'
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const authorResponse = await sanityFetch({ query: authorBySlugQuery, params: { slug } });
+  const author = authorResponse?.data;
+
+  if (!author) return { title: "Author Not Found" };
+
+  return {
+    title: `${author.name} | Medical Professional at The Health Journal`,
+    description: `Read articles and medical insights from ${author.name}, specializing in ${author.specializedIn || 'healthcare'}.`,
+    openGraph: {
+      title: author.name,
+      description: author.profession,
+      images: author.image
+        ? [urlFor(author.image).width(1200).height(630).url()]
+        : ['/LOGO.webp'],
+    },
+  };
+}
+
 
 export default async function AuthorPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
@@ -37,11 +59,31 @@ export default async function AuthorPage({ params }: { params: Promise<{ slug: s
       <Navbar />
 
       <main className="flex-1">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Person",
+              "name": author.name,
+              "jobTitle": author.profession,
+              "description": "Medical professional and contributor to The Health Journal.",
+              "url": `https://thehealthjournal.in/author/${slug}`,
+              "image": urlFor(author.image).url(),
+              "sameAs": [
+                author.linkedin,
+                author.twitter,
+                author.instagram,
+                author.website
+              ].filter(Boolean) // Removes empty links
+            })
+          }}
+        />
         {/* ─── AUTHOR HEADER SECTION ─── */}
         <div className="bg-muted/30 border-b border-border">
           <div className="max-w-[1000px] mx-auto px-6 py-16 md:py-24">
             <div className="flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-12">
-              
+
               {/* Profile Image */}
               {author.image ? (
                 <Image
@@ -137,8 +179,8 @@ export default async function AuthorPage({ params }: { params: Promise<{ slug: s
               {author.posts.map((post: any, index: number) => {
                 const readTimeVal = calculateReadingTime(post.body)
                 const displayDate = new Date(post.publishedAt || post._createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-                const category = post.categories && post.categories.length > 0 && post.categories[0].title 
-                  ? post.categories[0].title 
+                const category = post.categories && post.categories.length > 0 && post.categories[0].title
+                  ? post.categories[0].title
                   : "Health"
 
                 return (

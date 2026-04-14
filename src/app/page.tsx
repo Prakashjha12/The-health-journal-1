@@ -37,7 +37,7 @@ export default async function Home({
     "@type": "WebSite",
     "name": "The Health Journal",
     "url": "https://thehealthjournal.in/",
-    "alternateName": ["THJ", " The Health Journal"]
+    "alternateName": ["THJ", "The Health Journal"]
   };
   // Fetch from Sanity on the server only if configured
   const isConfigured = projectId !== 'placeholder' && dataset !== 'placeholder'
@@ -59,8 +59,14 @@ export default async function Home({
 
   // Pass it to the showcase Next.js Client Component
   return (
-    <>
-      {/* ─── ADD THIS TO TELL GOOGLE TO DOWNLOAD THE IMAGE NOW ─── */}
+    <div className="contents">
+      {/* ─── 2. Place Script at the very top of the body ─── */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
+      {/* ─── 3. Preload in Head ─── */}
       {lcpImageUrl && (
         <head>
           <link
@@ -71,16 +77,13 @@ export default async function Home({
           />
         </head>
       )}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+
       <MedicalBlogUI
         posts={posts}
         bookmarkedArticleIds={bookmarkedArticleIds}
         initialQuery={query}
         initialCategory={category}
       />
-    </>
+    </div>
   );
 }

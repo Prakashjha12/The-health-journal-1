@@ -240,7 +240,7 @@ export default function MedicalBlogUI({
                 </section>
 
                 {/* ─── CATEGORY TABS ─── */}
-                <section className="w-full ">
+                {/* <section className="w-full ">
                     <div className="max-w-[1200px] mx-auto px-6 overflow-x-auto">
                         <div className="flex items-center justify-center gap-3 py-5">
                             {dynamicCategories.map((cat) => (
@@ -249,6 +249,32 @@ export default function MedicalBlogUI({
                                     onClick={() => handleCategoryChange(cat)}
                                     className={cn(
                                         "px-5 py-2 rounded-full text-sm font-medium border transition-all duration-200 ease-out whitespace-nowrap",
+                                        "active:scale-95",
+                                        activeCategory === cat
+                                            ? "bg-foreground text-background border-foreground shadow-sm"
+                                            : "bg-background text-foreground border-border hover:border-muted-foreground hover:bg-muted/50"
+                                    )}
+                                >
+                                    {cat}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </section> */}
+                <section className="w-full sticky top-0 z-20 bg-background/95 backdrop-blur-sm border-b border-border/40">
+                    <div className="max-w-[1200px] mx-auto px-6">
+                        {/* 1. overflow-x-auto: Enables scrolling
+            2. no-scrollbar: Custom utility to hide the ugly scrollbar
+            3. flex-nowrap: Keeps buttons in a single line
+        */}
+                        <div className="flex items-center gap-3 py-4 overflow-x-auto no-scrollbar flex-nowrap mask-fade-edges">
+                            {dynamicCategories.map((cat) => (
+                                <button
+                                    key={cat}
+                                    onClick={() => handleCategoryChange(cat)}
+                                    className={cn(
+                                        // 4. whitespace-nowrap: CRITICAL - prevents text from breaking
+                                        "px-5 py-2 rounded-full text-sm font-medium border transition-all shrink-0 whitespace-nowrap",
                                         "active:scale-95",
                                         activeCategory === cat
                                             ? "bg-foreground text-background border-foreground shadow-sm"

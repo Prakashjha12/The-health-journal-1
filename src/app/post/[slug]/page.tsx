@@ -212,34 +212,84 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
           //   })
           // }}
 
+          // type="application/ld+json"
+          // dangerouslySetInnerHTML={{
+          //   __html: JSON.stringify({
+          //     "@context": "https://schema.org",
+          //     "@graph": [
+          //       {
+          //         "@type": "MedicalWebPage",
+          //         "@id": `https://thehealthjournal.in/post/${slug}#website`,
+          //         "url": `https://thehealthjournal.in/post/${slug}`,
+          //         "name": post.title,
+          //         "headline": post.title,
+          //         "description": post.summary,
+          //         "image": post.image ? [urlFor(post.image).width(1200).height(630).url()] : [],
+          //         "datePublished": post.publishedAt || post._createdAt,
+          //         "dateModified": post._updatedAt || post.publishedAt || post._createdAt,
+          //         "lastReviewed": post._updatedAt || post.publishedAt || post._createdAt,
+          //         "medicalAudience": "Patients",
+          //         "author": {
+          //           "@type": "Person",
+          //           "name": post.author?.name || "Dr. Rajnandini Dubey",
+          //           "url": post.author?.slug ? `https://thehealthjournal.in/author/${post.author.slug}` : "https://thehealthjournal.in"
+          //         },
+          //         // ─── THE MEDICAL TRUST SIGNAL ───
+          //         "reviewedBy": post.reviewer ? {
+          //           "@type": "Person",
+          //           "name": post.reviewer.name,
+          //           "jobTitle": "Medical Professional",
+          //           "url": post.reviewer.slug ? `https://thehealthjournal.in/author/${post.reviewer.slug}` : undefined
+          //         } : undefined,
+          //         "publisher": {
+          //           "@type": "Organization",
+          //           "name": "The Health Journal",
+          //           "logo": {
+          //             "@type": "ImageObject",
+          //             "url": "https://thehealthjournal.in/LOGO.webp"
+          //           }
+          //         }
+          //       },
+          //       // ─── FAQ SCHEMA (If FAQs exist) ───
+          //       ...(post.faqs && post.faqs.length > 0 ? [{
+          //         "@type": "FAQPage",
+          //         "mainEntity": post.faqs.map((faq: { question: string; answer: string }) => ({
+          //           "@type": "Question",
+          //           "name": faq.question,
+          //           "acceptedAnswer": {
+          //             "@type": "Answer",
+          //             "text": faq.answer
+          //           }
+          //         }))
+          //       }] : [])
+          //     ]
+          //   })
+          // }}
+
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@graph": [
                 {
-                  "@type": "MedicalWebPage",
-                  "@id": `https://thehealthjournal.in/post/${slug}#website`,
-                  "url": `https://thehealthjournal.in/post/${slug}`,
-                  "name": post.title,
+                  "@type": ["BlogPosting", "MedicalWebPage"], // Dual-type for both Rich Results & Trust
+                  "@id": `https://thehealthjournal.in/post/${slug}#post`,
+                  "mainEntityOfPage": `https://thehealthjournal.in/post/${slug}`,
                   "headline": post.title,
                   "description": post.summary,
                   "image": post.image ? [urlFor(post.image).width(1200).height(630).url()] : [],
                   "datePublished": post.publishedAt || post._createdAt,
                   "dateModified": post._updatedAt || post.publishedAt || post._createdAt,
                   "lastReviewed": post._updatedAt || post.publishedAt || post._createdAt,
-                  "medicalAudience": "Patients",
                   "author": {
                     "@type": "Person",
                     "name": post.author?.name || "Dr. Rajnandini Dubey",
                     "url": post.author?.slug ? `https://thehealthjournal.in/author/${post.author.slug}` : "https://thehealthjournal.in"
                   },
-                  // ─── THE MEDICAL TRUST SIGNAL ───
                   "reviewedBy": post.reviewer ? {
                     "@type": "Person",
                     "name": post.reviewer.name,
-                    "jobTitle": "Medical Professional",
-                    "url": post.reviewer.slug ? `https://thehealthjournal.in/author/${post.reviewer.slug}` : undefined
+                    "jobTitle": "Medical Professional"
                   } : undefined,
                   "publisher": {
                     "@type": "Organization",
@@ -250,10 +300,10 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
                     }
                   }
                 },
-                // ─── FAQ SCHEMA (If FAQs exist) ───
+                // FAQ Schema remains the same
                 ...(post.faqs && post.faqs.length > 0 ? [{
                   "@type": "FAQPage",
-                  "mainEntity": post.faqs.map((faq: { question: string; answer: string }) => ({
+                  "mainEntity": post.faqs.map((faq: any) => ({
                     "@type": "Question",
                     "name": faq.question,
                     "acceptedAnswer": {
@@ -265,6 +315,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
               ]
             })
           }}
+
 
         />
         {/* ─── BREADCRUMBS ─── */}

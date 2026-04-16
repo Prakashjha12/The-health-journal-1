@@ -32,14 +32,52 @@ export default async function Home({
 }) {
   const { query = "", category = "All" } = await searchParams;
 
+  // const jsonLd = {
+  //   "@context": "https://schema.org",
+  //   "@type": "WebSite",
+  //   "name": "The Health Journal",
+  //   "url": "https://thehealthjournal.in/",
+  //   "alternateName": ["THJ", "The Health Journal"]
+  // };
+  // Fetch from Sanity on the server only if configured
+
+
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "WebSite",
-    "name": "The Health Journal",
-    "url": "https://thehealthjournal.in/",
-    "alternateName": ["THJ", "The Health Journal"]
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://thehealthjournal.in/#website",
+        "url": "https://thehealthjournal.in/",
+        "name": "The Health Journal",
+        "alternateName": ["THJ"],
+        "publisher": { "@id": "https://thehealthjournal.in/#organization" },
+        // This adds the "Search Box" feature in Google results
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "https://thehealthjournal.in/?query={search_term_string}",
+          "query-input": "required name=search_term_string"
+        }
+      },
+      {
+        "@type": "MedicalOrganization",
+        "@id": "https://thehealthjournal.in/#organization",
+        "name": "The Health Journal",
+        "url": "https://thehealthjournal.in/",
+        "logo": "https://thehealthjournal.in/LOGO.webp", // Ensure this path is correct
+        "description": "A premier medical journal providing evidence-based health insights and professional wellness guides.",
+        "medicalSpecialty": "General Medicine",
+        "address": {
+          "@type": "PostalAddress",
+          "addressCountry": "IN"
+        },
+        "sameAs": [
+          "https://www.instagram.com/thehealthjournal", // Add your actual social links here
+          "https://www.linkedin.com/company/thehealthjournal"
+        ]
+      }
+    ]
   };
-  // Fetch from Sanity on the server only if configured
   const isConfigured = projectId !== 'placeholder' && dataset !== 'placeholder'
 
   const postsResponse = isConfigured

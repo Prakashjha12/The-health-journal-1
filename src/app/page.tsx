@@ -74,7 +74,7 @@ export default async function Home({
         "sameAs": [
           // "https://www.instagram.com/thehealthjournal", // Add your actual social links here
           "https://www.linkedin.com/in/rajnandini-dubey-a361b6220/",
-          "https://www.reddit.com/user/theHEALTHjournal_/?share_id=S3i_-C6zrR5q5qTVvLbAL&utm_content=1&utm_medium=ios_app&utm_name=ioscss&utm_source=share&utm_term=3/"
+          "https://www.reddit.com/user/theHEALTHjournal_"
         ]
       }
     ]

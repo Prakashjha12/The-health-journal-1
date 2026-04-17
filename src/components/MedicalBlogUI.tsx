@@ -206,9 +206,12 @@ export default function MedicalBlogUI({
                         cr={1.2}
                         className="fill-black/[0.15] dark:fill-white/[0.15] text-black/[0.15] dark:text-white/[0.15] [mask-image:linear-gradient(to_bottom,black_30%,transparent)] "
                     />
-                    <div className="sr-only relative z-10 max-w-[1200px] mx-auto px-6 cursor-default ">
+                    <div className="sr-only">
+                        <h2>The Health Journal: Evidence-based medical insights, wellness tips, and research breakdowns by healthcare professionals.</h2>
+                    </div>
+                    <div className=" relative z-10 max-w-[1200px] mx-auto px-6 cursor-default ">
                         <div className="mb-10 px-4 md:px-0">
-                            <h1 className="text-[36px] md:text-[68px] font-extrabold leading-[1.1] tracking-tighter text-zinc-900 dark:text-zinc-50 transition-colors duration-300">
+                            <h1 className=" text-[36px] md:text-[68px] font-extrabold leading-[1.1] tracking-tighter text-zinc-900 dark:text-zinc-50 transition-colors duration-300">
                                 The Health Journal
                             </h1>
                             <p className="text-[18px] md:text-[26px] mt-4 font-medium leading-tight text-zinc-600 dark:text-zinc-400 max-w-2xl">

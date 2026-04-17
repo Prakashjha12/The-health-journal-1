@@ -23,8 +23,8 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion'
-import { Copyright } from "@/components/ui/Copyright"
 import { FormattedDate } from "@/components/ui/FormattedDate"
+import { Footer } from "@/components/Footer"
 export const revalidate = 3600; // Revalidate the cache every 1 hour (3600 seconds)
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -627,45 +627,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
         )}
       </main>
 
-      {/* ─── FOOTER ─── */}
-      <footer className="w-full border-t border-border bg-background">
-        <div className="max-w-[1200px] mx-auto px-6 py-10">
-          <div className="grid gap-8 md:grid-cols-[1fr_auto]">
-            <div className="space-y-3">
-              <div className="flex items-center gap-2.5">
-                <div className="relative h-8 w-8 flex items-center justify-center shrink-0">
-                  <Image src="/LOGO.webp" alt="Logo" width={32} height={32} className="object-contain" />
-                </div>
-                <span className="font-bold text-base tracking-tight">The Health Journal</span>
-              </div>
-              <p className="text-[13px] text-muted-foreground max-w-sm leading-relaxed">
-                Welcome to The Health Journal, your free library of health insights and wellness guides. Evidence-based content you can trust.
-              </p>
-            </div>
-            <div>
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Links</h3>
-              <nav className="space-y-2 text-[13px]">
-                <Link href="/" className="block text-muted-foreground hover:text-foreground transition-colors">Home</Link>
-                <Link href="/#articles" className="block text-muted-foreground hover:text-foreground transition-colors">Articles</Link>
-              </nav>
-            </div>
-
-            {/* Medical Disclaimer */}
-            <div className="mt-8 mb-4 p-4 rounded-lg bg-muted/50 border border-border/50 text-center">
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                <span className="font-semibold text-foreground/80">Disclaimer:</span> The content on this site is for informational purposes only and is not a substitute for professional medical advice, diagnosis, or treatment.
-              </p>
-            </div>
-
-          </div>
-          <div className="mt-8 pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
-            <p><Copyright /></p>
-            <p>
-              Made with ❤️ by <a href="https://www.prakashjha.com" target="_blank" rel="noopener noreferrer" className="font-medium hover:text-foreground transition-colors underline underline-offset-4">Prakashjha</a>
-            </p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }

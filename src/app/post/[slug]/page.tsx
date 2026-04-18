@@ -71,6 +71,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       description: post.summary,
       images: [ogImage],
     },
+
   }
 }
 

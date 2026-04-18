@@ -121,3 +121,10 @@ export const authorBySlugQuery = groq`*[_type == "author" && slug.current == $sl
     body
   }
 }`
+
+export const allPostsQuery = groq`*[_type == "post" && defined(slug.current)] {
+  slug,
+  _updatedAt,
+  publishedAt
+}`
+

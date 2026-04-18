@@ -27,6 +27,8 @@ import { FormattedDate } from "@/components/ui/FormattedDate"
 import { Footer } from "@/components/Footer"
 export const revalidate = 3600; // Revalidate the cache every 1 hour (3600 seconds)
 
+
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params
 
@@ -50,7 +52,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const ogImage = post.image ? urlFor(post.image).width(1200).height(630).url() : '/default-og.jpg'
 
   return {
-    title: `${post.title} | The Health Journal`,
+    title: post.title,
     description: post.summary || "Read the latest health insights from Dr. Rajnandini Dubey at The Health Journal.",
     keywords: post.tags?.join(', ') || 'health, wellness, physio',
     alternates: {
@@ -266,13 +268,62 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
           //   })
           // }}
 
+          // type="application/ld+json"
+          // dangerouslySetInnerHTML={{
+          //   __html: JSON.stringify({
+          //     "@context": "https://schema.org",
+          //     "@graph": [
+          //       {
+          //         "@type": ["BlogPosting", "MedicalWebPage"], // Dual-type for both Rich Results & Trust
+          //         "@id": `https://thehealthjournal.in/post/${slug}#post`,
+          //         "mainEntityOfPage": `https://thehealthjournal.in/post/${slug}`,
+          //         "headline": post.title,
+          //         "description": post.summary,
+          //         "image": post.image ? [urlFor(post.image).width(1200).height(630).url()] : [],
+          //         "datePublished": post.publishedAt || post._createdAt,
+          //         "dateModified": post._updatedAt || post.publishedAt || post._createdAt,
+          //         "lastReviewed": post._updatedAt || post.publishedAt || post._createdAt,
+          //         "author": {
+          //           "@type": "Person",
+          //           "name": post.author?.name || "Dr. Rajnandini Dubey",
+          //           "url": post.author?.slug ? `https://thehealthjournal.in/author/${post.author.slug}` : "https://thehealthjournal.in"
+          //         },
+          //         "reviewedBy": post.reviewer ? {
+          //           "@type": "Person",
+          //           "name": post.reviewer.name,
+          //           "jobTitle": "Medical Professional"
+          //         } : undefined,
+          //         "publisher": {
+          //           "@type": "Organization",
+          //           "name": "The Health Journal",
+          //           "logo": {
+          //             "@type": "ImageObject",
+          //             "url": "https://thehealthjournal.in/LOGO.webp"
+          //           }
+          //         }
+          //       },
+          //       // FAQ Schema remains the same
+          //       ...(post.faqs && post.faqs.length > 0 ? [{
+          //         "@type": "FAQPage",
+          //         "mainEntity": post.faqs.map((faq: any) => ({
+          //           "@type": "Question",
+          //           "name": faq.question,
+          //           "acceptedAnswer": {
+          //             "@type": "Answer",
+          //             "text": faq.answer
+          //           }
+          //         }))
+          //       }] : [])
+          //     ]
+          //   })
+          // }}
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@graph": [
                 {
-                  "@type": ["BlogPosting", "MedicalWebPage"], // Dual-type for both Rich Results & Trust
+                  "@type": ["BlogPosting", "MedicalWebPage"],
                   "@id": `https://thehealthjournal.in/post/${slug}#post`,
                   "mainEntityOfPage": `https://thehealthjournal.in/post/${slug}`,
                   "headline": post.title,
@@ -280,17 +331,11 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
                   "image": post.image ? [urlFor(post.image).width(1200).height(630).url()] : [],
                   "datePublished": post.publishedAt || post._createdAt,
                   "dateModified": post._updatedAt || post.publishedAt || post._createdAt,
-                  "lastReviewed": post._updatedAt || post.publishedAt || post._createdAt,
                   "author": {
                     "@type": "Person",
                     "name": post.author?.name || "Dr. Rajnandini Dubey",
                     "url": post.author?.slug ? `https://thehealthjournal.in/author/${post.author.slug}` : "https://thehealthjournal.in"
                   },
-                  "reviewedBy": post.reviewer ? {
-                    "@type": "Person",
-                    "name": post.reviewer.name,
-                    "jobTitle": "Medical Professional"
-                  } : undefined,
                   "publisher": {
                     "@type": "Organization",
                     "name": "The Health Journal",
@@ -300,7 +345,25 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
                     }
                   }
                 },
-                // FAQ Schema remains the same
+                // ─── NEW: BREADCRUMB SCHEMA ───
+                {
+                  "@type": "BreadcrumbList",
+                  "itemListElement": [
+                    {
+                      "@type": "ListItem",
+                      "position": 1,
+                      "name": "Home",
+                      "item": "https://thehealthjournal.in"
+                    },
+                    {
+                      "@type": "ListItem",
+                      "position": 2,
+                      "name": post.title,
+                      "item": `https://thehealthjournal.in/post/${slug}`
+                    }
+                  ]
+                },
+                // ─── FAQ SCHEMA ───
                 ...(post.faqs && post.faqs.length > 0 ? [{
                   "@type": "FAQPage",
                   "mainEntity": post.faqs.map((faq: any) => ({

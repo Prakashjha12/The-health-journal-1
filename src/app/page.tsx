@@ -3,6 +3,7 @@ import { searchPostsQuery } from '@/sanity/lib/queries'
 import MedicalBlogUI from '@/components/MedicalBlogUI'
 import { getBookmarks } from '@/lib/actions/user.actions'
 import { urlFor } from '@/sanity/lib/image'
+import { Metadata } from 'next'
 
 interface Post {
   _id: string;

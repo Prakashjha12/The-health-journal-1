@@ -96,7 +96,7 @@ const portableTextComponents: PortableTextComponents = {
   },
   block: {
     normal: ({ children }: { children?: React.ReactNode }) => (
-      <p className="[overflow-wrap:anywhere] break-words">{children}</p>
+      <p className="wrap-anywhere">{children}</p>
     ),
     h2: ({ children, value }) => {
       const text = value?.children
@@ -108,31 +108,31 @@ const portableTextComponents: PortableTextComponents = {
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/(^-|-$)/g, '') || 'section'
       return (
-        <h2 id={id} className="scroll-mt-24 text-2xl mt-10 mb-4 font-bold tracking-tight [overflow-wrap:anywhere] break-words">
+        <h2 id={id} className="scroll-mt-24 text-2xl mt-10 mb-4 font-bold tracking-tight wrap-anywhere">
           {children}
         </h2>
       )
     },
     blockquote: ({ children }: { children?: React.ReactNode }) => (
-      <blockquote className="my-8 border-l-4 border-primary bg-zinc-100/80 dark:bg-zinc-900/50 py-6 pl-8 pr-6 rounded-r-xl shadow-sm italic text-zinc-800 dark:text-zinc-200 text-lg leading-relaxed [overflow-wrap:anywhere] break-words">
+      <blockquote className="my-8 border-l-4 border-primary bg-zinc-100/80 dark:bg-zinc-900/50 py-6 pl-8 pr-6 rounded-r-xl shadow-sm italic text-zinc-800 dark:text-zinc-200 text-lg leading-relaxed wrap-anywhere">
         {children}
       </blockquote>
     ),
   },
   list: {
     bullet: ({ children }: { children?: React.ReactNode }) => (
-      <ul className="list-disc pl-5 [overflow-wrap:anywhere] break-words space-y-1">{children}</ul>
+      <ul className="list-disc pl-5 wrap-anywhere space-y-1">{children}</ul>
     ),
     number: ({ children }: { children?: React.ReactNode }) => (
-      <ol className="list-decimal pl-5 [overflow-wrap:anywhere] break-words space-y-1">{children}</ol>
+      <ol className="list-decimal pl-5 wrap-anywhere space-y-1">{children}</ol>
     ),
   },
   listItem: {
     bullet: ({ children }: { children?: React.ReactNode }) => (
-      <li className="[overflow-wrap:anywhere] break-words">{children}</li>
+      <li className="wrap-anywhere">{children}</li>
     ),
     number: ({ children }: { children?: React.ReactNode }) => (
-      <li className="[overflow-wrap:anywhere] break-words">{children}</li>
+      <li className="wrap-anywhere">{children}</li>
     ),
   },
   marks: {
@@ -143,7 +143,7 @@ const portableTextComponents: PortableTextComponents = {
       if (isInternal) {
         const path = href.replace('https://thehealthjournal.in', '')
         return (
-          <Link href={path} className="text-primary hover:underline underline-offset-4 decoration-primary/40 transition-all font-medium break-all [overflow-wrap:anywhere]">
+          <Link href={path} className="text-primary hover:underline underline-offset-4 decoration-primary/40 transition-all font-medium break-all">
             {children}
           </Link>
         )
@@ -154,7 +154,7 @@ const portableTextComponents: PortableTextComponents = {
           href={href}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-primary hover:underline underline-offset-4 decoration-primary/40 transition-all font-medium break-all [overflow-wrap:anywhere]"
+          className="text-primary hover:underline underline-offset-4 decoration-primary/40 transition-all font-medium break-all"
         >
           {children}
         </a>
@@ -537,14 +537,14 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
             </aside>
 
             {/* Article Body */}
-            <article className="min-w-0 max-w-full overflow-x-clip [overflow-wrap:anywhere] break-words">
-              <div className="prose prose-zinc dark:prose-invert md:prose-lg max-w-none min-w-0 [overflow-wrap:anywhere] break-words
+            <article className="min-w-0 max-w-full overflow-x-clip wrap-anywhere">
+              <div className="prose prose-zinc dark:prose-invert md:prose-lg max-w-none min-w-0 wrap-anywhere
                                 prose-headings:font-bold prose-headings:tracking-tight
                                 prose-h2:text-2xl prose-h2:mt-10 prose-h2:mb-4
                                 prose-h3:text-xl prose-h3:mt-8 prose-h3:mb-3
-                                prose-p:leading-[1.8] prose-p:text-[15px] prose-p:text-foreground/85 prose-p:[overflow-wrap:anywhere] prose-p:break-words
-                                prose-li:text-[15px] prose-li:leading-[1.8] prose-li:[overflow-wrap:anywhere] prose-li:break-words
-                                prose-a:text-foreground prose-a:underline prose-a:underline-offset-2 prose-a:decoration-foreground/30 hover:prose-a:decoration-foreground prose-a:break-all prose-a:[overflow-wrap:anywhere]
+                                prose-p:leading-[1.8] prose-p:text-[15px] prose-p:text-foreground/85 prose-p:wrap-anywhere
+                                prose-li:text-[15px] prose-li:leading-[1.8] prose-li:wrap-anywhere
+                                prose-a:text-foreground prose-a:underline prose-a:underline-offset-2 prose-a:decoration-foreground/30 hover:prose-a:decoration-foreground prose-a:break-all
                                 prose-blockquote:not-prose
                                 prose-img:rounded-xl prose-img:border prose-img:border-border
                                 prose-code:text-sm prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:before:content-none prose-code:after:content-none

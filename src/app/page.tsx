@@ -1,5 +1,5 @@
 import { sanityFetch } from '@/sanity/lib/live'
-import { searchPostsQuery } from '@/sanity/lib/queries'
+import { categoriesQuery, publishedSuggestionsQuery, searchPostsQuery } from '@/sanity/lib/queries'
 import MedicalBlogUI from '@/components/MedicalBlogUI'
 import { getBookmarks } from '@/lib/actions/user.actions'
 import { urlFor } from '@/sanity/lib/image'
@@ -81,13 +81,52 @@ export default async function Home({
   };
   const isConfigured = projectId !== 'placeholder' && dataset !== 'placeholder'
 
-  const postsResponse = isConfigured
-    ? await sanityFetch({
-      query: searchPostsQuery,
-      params: { searchQuery: query, category },
-    })
-    : { data: [] }
+  const [postsResponse, categoriesResponse, suggestionsResponse] = isConfigured
+    ? await Promise.all([
+      sanityFetch({
+        query: searchPostsQuery,
+        params: { searchQuery: query, category },
+      }),
+      sanityFetch({
+        query: categoriesQuery,
+      }),
+      sanityFetch({
+        query: publishedSuggestionsQuery,
+      }),
+    ])
+    : [{ data: [] }, { data: { postCategories: [], allCategories: [] } }, { data: [] }]
+
   const posts: Post[] = postsResponse.data
+  const searchSuggestions: {
+    _id: string;
+    title: string;
+    slug: string;
+    categories?: { title: string }[];
+  }[] = suggestionsResponse.data || []
+
+  const seen = new Set<string>()
+  const allCategories: string[] = []
+  const catData = categoriesResponse.data as {
+    postCategories?: { categories?: { title: string }[] }[]
+    allCategories?: { title: string }[]
+  } | undefined
+
+  catData?.postCategories?.forEach((p) => {
+    p.categories?.forEach((c) => {
+      const norm = c?.title?.trim().toLowerCase()
+      if (norm && !seen.has(norm)) {
+        seen.add(norm)
+        allCategories.push(c.title)
+      }
+    })
+  })
+  catData?.allCategories?.forEach((c) => {
+    const norm = c?.title?.trim().toLowerCase()
+    if (norm && !seen.has(norm)) {
+      seen.add(norm)
+      allCategories.push(c.title)
+    }
+  })
 
   // Fetch bookmarks
   const bookmarkedArticleIds: string[] = await getBookmarks()
@@ -119,6 +158,8 @@ export default async function Home({
 
       <MedicalBlogUI
         posts={posts}
+        allCategories={allCategories}
+        searchSuggestions={searchSuggestions}
         bookmarkedArticleIds={bookmarkedArticleIds}
         initialQuery={query}
         initialCategory={category}

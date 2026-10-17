@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import {
-    Search, Stethoscope, ChevronLeft, ChevronRight
+    Search, Stethoscope, ChevronLeft, ChevronRight, FileText, ArrowRight, X
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -16,6 +16,10 @@ import { Footer } from "@/components/Footer"
 import { BookmarkButton } from "@/components/BookmarkButton"
 import { useRouter, usePathname } from "next/navigation"
 import { FormattedDate } from "@/components/ui/FormattedDate"
+import gsap from "gsap"
+import { useGSAP } from "@gsap/react"
+
+gsap.registerPlugin(useGSAP)
 
 interface SanityPost {
     _id: string
@@ -99,13 +103,24 @@ const FALLBACK_ARTICLES = [
     }
 ]
 
+interface SearchSuggestion {
+    _id: string
+    title: string
+    slug: string
+    categories?: { title: string }[]
+}
+
 export default function MedicalBlogUI({
     posts,
+    allCategories = [],
+    searchSuggestions = [],
     bookmarkedArticleIds = [],
     initialQuery = "",
     initialCategory = "All"
 }: {
     posts: SanityPost[],
+    allCategories?: string[],
+    searchSuggestions?: SearchSuggestion[],
     bookmarkedArticleIds?: string[],
     initialQuery?: string,
     initialCategory?: string
@@ -116,26 +131,202 @@ export default function MedicalBlogUI({
     const [activeCategory, setActiveCategory] = React.useState(initialCategory)
     const [currentPage, setCurrentPage] = React.useState(1)
 
+    const [isSuggestionsOpen, setIsSuggestionsOpen] = React.useState(false)
+    const [highlightedIndex, setHighlightedIndex] = React.useState(-1)
+    const searchContainerRef = React.useRef<HTMLDivElement>(null)
+
+    const categoryScrollRef = React.useRef<HTMLDivElement>(null)
+    const activeCategoryRef = React.useRef<HTMLButtonElement>(null)
+    const heroRef = React.useRef<HTMLDivElement>(null)
+    const articlesSectionRef = React.useRef<HTMLDivElement>(null)
+    const [canScrollLeft, setCanScrollLeft] = React.useState(false)
+    const [canScrollRight, setCanScrollRight] = React.useState(false)
+
+    // Compute live suggestions from published articles
+    const suggestions = React.useMemo(() => {
+        const q = searchQuery.trim().toLowerCase()
+        if (!q || q.length === 0) return []
+
+        return searchSuggestions
+            .filter((item) => {
+                const titleMatch = item.title?.toLowerCase().includes(q)
+                const catMatch = item.categories?.some((c) => c.title?.toLowerCase().includes(q))
+                return titleMatch || catMatch
+            })
+            .slice(0, 5)
+    }, [searchQuery, searchSuggestions])
+
+    // Close suggestions on click outside
+    React.useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (searchContainerRef.current && !searchContainerRef.current.contains(e.target as Node)) {
+                setIsSuggestionsOpen(false)
+                setHighlightedIndex(-1)
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside)
+        return () => document.removeEventListener("mousedown", handleClickOutside)
+    }, [])
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (!isSuggestionsOpen || suggestions.length === 0) {
+            if (e.key === "ArrowDown" && searchQuery.trim().length > 0) {
+                setIsSuggestionsOpen(true)
+            }
+            return
+        }
+
+        if (e.key === "ArrowDown") {
+            e.preventDefault()
+            setHighlightedIndex((prev) => (prev < suggestions.length - 1 ? prev + 1 : 0))
+        } else if (e.key === "ArrowUp") {
+            e.preventDefault()
+            setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : suggestions.length - 1))
+        } else if (e.key === "Enter" && highlightedIndex >= 0 && highlightedIndex < suggestions.length) {
+            e.preventDefault()
+            const selected = suggestions[highlightedIndex]
+            setIsSuggestionsOpen(false)
+            router.push(`/post/${selected.slug}`)
+        } else if (e.key === "Escape") {
+            setIsSuggestionsOpen(false)
+            setHighlightedIndex(-1)
+        }
+    }
+
+    // GSAP Micro-animations: Hero Entrance
+    useGSAP(
+        () => {
+            const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+            if (prefersReducedMotion) return
+
+            gsap.from(
+                [".gsap-hero-title", ".gsap-hero-subtitle", ".gsap-hero-divider", ".gsap-hero-search", ".gsap-hero-desc"],
+                {
+                    y: 16,
+                    opacity: 0,
+                    duration: 0.65,
+                    stagger: 0.07,
+                    ease: "power2.out",
+                    clearProps: "all"
+                }
+            )
+        },
+        { scope: heroRef }
+    )
+
+    // GSAP Micro-animations: Articles Stagger Reveal on Category/Page update
+    useGSAP(
+        () => {
+            const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+            if (prefersReducedMotion) return
+
+            const targets = articlesSectionRef.current?.querySelectorAll(".gsap-fade-item")
+            if (targets && targets.length > 0) {
+                gsap.fromTo(
+                    targets,
+                    { y: 14, opacity: 0 },
+                    {
+                        y: 0,
+                        opacity: 1,
+                        duration: 0.4,
+                        stagger: 0.04,
+                        ease: "power2.out",
+                        clearProps: "transform,opacity"
+                    }
+                )
+            }
+        },
+        {
+            scope: articlesSectionRef,
+            dependencies: [activeCategory, currentPage, posts],
+            revertOnUpdate: true
+        }
+    )
+
     // Sync state with props when they change (e.g. browser back button)
     React.useEffect(() => {
         setSearchQuery(initialQuery)
         setActiveCategory(initialCategory)
     }, [initialQuery, initialCategory])
 
-    // Extract dynamic categories from Sanity posts, with a fallback
-    const dynamicCategories = React.useMemo(() => {
-        const extracted = new Set<string>()
-        posts.forEach(post => {
-            if (post.categories && post.categories.length > 0) {
-                post.categories.forEach(cat => {
-                    if (cat.title) extracted.add(cat.title)
-                })
+    // Maintain complete categories list so choosing one doesn't make others disappear
+    const categories = React.useMemo(() => {
+        const seen = new Set<string>()
+        const list: string[] = []
+
+        const addCategory = (title: string) => {
+            const norm = title.trim().toLowerCase()
+            if (norm && !seen.has(norm)) {
+                seen.add(norm)
+                list.push(title)
             }
+        }
+
+        // 1. Add all categories fetched from Sanity
+        allCategories.forEach(addCategory)
+
+        // 2. Also ensure any categories on currently loaded posts are preserved
+        posts.forEach(post => {
+            post.categories?.forEach(cat => {
+                if (cat.title) addCategory(cat.title)
+            })
         })
-        const cats = Array.from(extracted)
-        if (initialCategory !== "All") extracted.add(initialCategory)
-        return ["All", ...(cats.length > 0 ? Array.from(extracted) : ["Health", "Wellness", "Research", "Lifestyle", "Nutrition"])]
-    }, [posts, initialCategory])
+
+        // 3. Ensure active/initial category is in the list
+        if (initialCategory && initialCategory !== "All") {
+            addCategory(initialCategory)
+        }
+
+        // 4. Default fallback if no categories exist
+        if (list.length === 0) {
+            return ["All", "ANXIETY", "Wellness", "Sleep & Technology", "mental health", "Nutrition & Metabolism", "Injury & Recovery", "Artificial Intelligence", "Physiological Regulation"]
+        }
+
+        return ["All", ...list]
+    }, [allCategories, posts, initialCategory])
+
+    const checkScrollability = React.useCallback(() => {
+        const el = categoryScrollRef.current
+        if (!el) return
+        const { scrollLeft, scrollWidth, clientWidth } = el
+        setCanScrollLeft(scrollLeft > 2)
+        setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 4)
+    }, [])
+
+    React.useEffect(() => {
+        checkScrollability()
+        const handleResize = () => checkScrollability()
+        window.addEventListener("resize", handleResize)
+        return () => window.removeEventListener("resize", handleResize)
+    }, [checkScrollability, categories])
+
+    const isCategoryActive = (cat: string) => {
+        if (activeCategory === cat) return true
+        if (activeCategory.trim().toLowerCase() === cat.trim().toLowerCase()) return true
+        return false
+    }
+
+    const scrollCategories = (direction: "left" | "right") => {
+        const el = categoryScrollRef.current
+        if (!el) return
+        const amount = Math.max(260, Math.floor(el.clientWidth * 0.6))
+        el.scrollBy({
+            left: direction === "left" ? -amount : amount,
+            behavior: "smooth"
+        })
+        setTimeout(checkScrollability, 350)
+    }
+
+    React.useEffect(() => {
+        if (activeCategoryRef.current) {
+            activeCategoryRef.current.scrollIntoView({
+                behavior: "smooth",
+                block: "nearest",
+                inline: "nearest"
+            })
+            setTimeout(checkScrollability, 350)
+        }
+    }, [activeCategory, checkScrollability])
 
     const updateFilters = (query: string, category: string) => {
         const params = new URLSearchParams()
@@ -145,15 +336,28 @@ export default function MedicalBlogUI({
     }
 
     const handleCategoryChange = (cat: string) => {
-        setActiveCategory(cat)
+        const nextCategory = (cat !== "All" && isCategoryActive(cat)) ? "All" : cat
+        setActiveCategory(nextCategory)
         setCurrentPage(1)
-        updateFilters(searchQuery, cat)
+        updateFilters(searchQuery, nextCategory)
     }
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault()
+        setIsSuggestionsOpen(false)
+        setHighlightedIndex(-1)
         setCurrentPage(1)
         updateFilters(searchQuery, activeCategory)
+    }
+
+    const handlePageChange = (newPage: number) => {
+        setCurrentPage(newPage)
+        const target = document.getElementById("recent-articles") || document.getElementById("articles")
+        if (target) {
+            const yOffset = -80
+            const y = target.getBoundingClientRect().top + window.scrollY + yOffset
+            window.scrollTo({ top: Math.max(0, y), behavior: "smooth" })
+        }
     }
 
     const mappedArticles = React.useMemo(() =>
@@ -187,103 +391,231 @@ export default function MedicalBlogUI({
 
             <main className="flex-1">
                 {/* ─── HERO SECTION ─── */}
-                <section id="home" className="relative w-full pt-12 pb-10 md:pt-16 md:pb-14  overflow-hidden">
-                    <DotPattern
-                        width={14}
-                        height={14}
-                        cx={1}
-                        cy={1}
-                        cr={1.2}
-                        className="fill-black/[0.15] dark:fill-white/[0.15] text-black/[0.15] dark:text-white/[0.15] [mask-image:linear-gradient(to_bottom,black_30%,transparent)] "
-                    />
+                <section id="home" className="relative z-30 w-full pt-12 pb-10 md:pt-16 md:pb-14">
+                    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                        <DotPattern
+                            width={14}
+                            height={14}
+                            cx={1}
+                            cy={1}
+                            cr={1.2}
+                            className="fill-black/[0.15] dark:fill-white/[0.15] text-black/[0.15] dark:text-white/[0.15] [mask-image:linear-gradient(to_bottom,black_30%,transparent)] "
+                        />
+                    </div>
                     <div className="sr-only">
                         <h2>The Health Journal: Evidence-based medical insights, wellness tips, and research breakdowns by healthcare professionals.</h2>
                     </div>
-                    <div className=" relative z-10 max-w-[1200px] mx-auto px-6 cursor-default ">
+                    <div ref={heroRef} className=" relative z-10 max-w-[1200px] mx-auto px-6 cursor-default ">
                         <div className="mb-10 px-4 md:px-0">
-                            <h1 className=" text-[36px] md:text-[68px] font-extrabold leading-[1.1] tracking-tighter text-zinc-900 dark:text-zinc-50 transition-colors duration-300">
+                            <h1 className="gsap-hero-title text-[36px] md:text-[68px] font-extrabold leading-[1.1] tracking-tighter text-zinc-900 dark:text-zinc-50 transition-colors duration-300">
                                 The Health Journal
                             </h1>
-                            <p className="text-[18px] md:text-[26px] mt-4 font-medium leading-tight text-zinc-600 dark:text-zinc-400 max-w-2xl">
+                            <p className="gsap-hero-subtitle text-[18px] md:text-[26px] mt-4 font-medium leading-tight text-zinc-600 dark:text-zinc-400 max-w-2xl">
                                 Got a health question?
                                 <span className="block md:inline ml-0 md:ml-2 text-primary-600 dark:text-blue-400">
                                     Get evidence-based answers.
                                 </span>
                             </p>
-                            <div className="mt-8 h-[1px] w-full bg-zinc-200 dark:bg-zinc-800" />
+                            <div className="gsap-hero-divider mt-8 h-[1px] w-full bg-zinc-200 dark:bg-zinc-800" />
                         </div>
 
-                        <form onSubmit={handleSearch} className="flex items-center gap-0 max-w-[500px] mb-5">
-                            <Input
-                                type="text"
-                                placeholder="Search articles..."
-                                className="h-12 rounded-r-none border-r-0 bg-card text-base"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                            />
-                            <Button type="submit" className="h-12 rounded-l-none px-6 text-base font-medium">
-                                Search
-                            </Button>
-                        </form>
+                        {/* Search Bar with Live Suggestions Dropdown */}
+                        <div ref={searchContainerRef} className="gsap-hero-search relative max-w-[500px] mb-5 z-40">
+                            <form onSubmit={handleSearch} className="flex items-center gap-0 w-full relative">
+                                <div className="relative flex-1">
+                                    <Input
+                                        type="text"
+                                        placeholder="Search articles..."
+                                        className="h-12 rounded-r-none border-r-0 bg-card text-base focus-visible:ring-1 transition-all pr-8"
+                                        value={searchQuery}
+                                        onChange={(e) => {
+                                            setSearchQuery(e.target.value)
+                                            setIsSuggestionsOpen(e.target.value.trim().length > 0)
+                                            setHighlightedIndex(-1)
+                                        }}
+                                        onFocus={() => {
+                                            if (searchQuery.trim().length > 0) {
+                                                setIsSuggestionsOpen(true)
+                                            }
+                                        }}
+                                        onKeyDown={handleKeyDown}
+                                        autoComplete="off"
+                                        aria-autocomplete="list"
+                                        aria-expanded={isSuggestionsOpen && suggestions.length > 0}
+                                    />
+                                    {searchQuery && (
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setSearchQuery("")
+                                                setIsSuggestionsOpen(false)
+                                                setHighlightedIndex(-1)
+                                            }}
+                                            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 hover:text-foreground p-1 rounded-full transition-colors cursor-pointer"
+                                            aria-label="Clear search"
+                                        >
+                                            <X className="h-4 w-4" />
+                                        </button>
+                                    )}
+                                </div>
+                                <Button type="submit" className="h-12 rounded-l-none px-6 text-base font-medium active:scale-95 transition-transform shrink-0 cursor-pointer">
+                                    Search
+                                </Button>
+                            </form>
 
-                        <p className="text-muted-foreground text-base leading-relaxed max-w-[520px]">
+                            {/* Floating Suggestions Dropdown */}
+                            {isSuggestionsOpen && searchQuery.trim().length > 0 && (
+                                <div className="absolute top-[calc(100%+6px)] left-0 right-0 bg-card/95 backdrop-blur-md border border-border/80 rounded-xl shadow-2xl overflow-hidden z-50">
+                                    <div className="px-3.5 py-2 border-b border-border/50 text-[11px] font-semibold tracking-wider uppercase text-muted-foreground/80 flex items-center justify-between">
+                                        <span>Related Articles ({suggestions.length})</span>
+                                        <span className="text-[10px] font-normal lowercase text-muted-foreground/60">esc to close</span>
+                                    </div>
+
+                                    {suggestions.length > 0 ? (
+                                        <ul className="max-h-[300px] overflow-y-auto divide-y divide-border/30">
+                                            {suggestions.map((item, idx) => {
+                                                const categoryTitle = item.categories && item.categories.length > 0 ? item.categories[0].title : null
+                                                const isHighlighted = idx === highlightedIndex
+
+                                                return (
+                                                    <li key={item._id}>
+                                                        <Link
+                                                            href={`/post/${item.slug}`}
+                                                            onClick={() => {
+                                                                setIsSuggestionsOpen(false)
+                                                                setHighlightedIndex(-1)
+                                                            }}
+                                                            onMouseEnter={() => setHighlightedIndex(idx)}
+                                                            className={cn(
+                                                                "flex items-start gap-3 px-3.5 py-2.5 transition-colors group",
+                                                                isHighlighted ? "bg-muted text-foreground" : "hover:bg-muted/60"
+                                                            )}
+                                                        >
+                                                            <FileText className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5 group-hover:text-primary transition-colors" />
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className="text-sm font-medium leading-snug line-clamp-1 group-hover:text-primary transition-colors">
+                                                                    {item.title}
+                                                                </p>
+                                                                {categoryTitle && (
+                                                                    <span className="inline-block mt-0.5 text-[11px] text-muted-foreground">
+                                                                        {categoryTitle.trim()}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/40 shrink-0 mt-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                        </Link>
+                                                    </li>
+                                                )
+                                            })}
+                                        </ul>
+                                    ) : (
+                                        <div className="p-4 text-center text-xs text-muted-foreground">
+                                            No published articles found matching &ldquo;<span className="font-semibold text-foreground">{searchQuery}</span>&rdquo;
+                                        </div>
+                                    )}
+
+                                    <div className="p-2 border-t border-border/50 bg-muted/20">
+                                        <button
+                                            type="button"
+                                            onClick={handleSearch}
+                                            className="w-full text-left px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors flex items-center justify-between cursor-pointer"
+                                        >
+                                            <span>Search all results for &ldquo;{searchQuery}&rdquo;</span>
+                                            <Search className="h-3.5 w-3.5" />
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        <p className="gsap-hero-desc text-muted-foreground text-base leading-relaxed max-w-[520px]">
                             Your go-to source for evidence-based medical insights. We&apos;ve got wellness tips that actually work, research breakdowns that make sense, and health guides to live your best life.
                         </p>
                     </div>
                 </section>
 
                 {/* ─── CATEGORY TABS ─── */}
-                {/* <section className="w-full ">
-                    <div className="max-w-[1200px] mx-auto px-6 overflow-x-auto">
-                        <div className="flex items-center justify-center gap-3 py-5">
-                            {dynamicCategories.map((cat) => (
-                                <button
-                                    key={cat}
-                                    onClick={() => handleCategoryChange(cat)}
-                                    className={cn(
-                                        "px-5 py-2 rounded-full text-sm font-medium border transition-all duration-200 ease-out whitespace-nowrap",
-                                        "active:scale-95",
-                                        activeCategory === cat
-                                            ? "bg-foreground text-background border-foreground shadow-sm"
-                                            : "bg-background text-foreground border-border hover:border-muted-foreground hover:bg-muted/50"
-                                    )}
-                                >
-                                    {cat}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                </section> */}
                 <section className="w-full sticky top-0 z-20 bg-background/95 backdrop-blur-sm border-b border-border/40">
                     <div className="max-w-[1200px] mx-auto px-6">
-                        {/* 1. overflow-x-auto: Enables scrolling
-            2. no-scrollbar: Custom utility to hide the ugly scrollbar
-            3. flex-nowrap: Keeps buttons in a single line
-        */}
-                        <div className="flex items-center gap-3 py-4 overflow-x-auto no-scrollbar flex-nowrap mask-fade-edges">
-                            {dynamicCategories.map((cat) => (
-                                <button
-                                    key={cat}
-                                    onClick={() => handleCategoryChange(cat)}
+                        <div className="relative flex items-center py-3 gap-2">
+                            {/* Scrollable Categories List */}
+                            <div
+                                ref={categoryScrollRef}
+                                onScroll={checkScrollability}
+                                className="flex items-center gap-2.5 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden scroll-smooth flex-nowrap flex-1 min-w-0"
+                            >
+                                {categories.map((cat) => {
+                                    const isActive = isCategoryActive(cat)
+                                    return (
+                                        <button
+                                            key={cat}
+                                            ref={isActive ? activeCategoryRef : null}
+                                            onClick={() => handleCategoryChange(cat)}
+                                            className={cn(
+                                                "px-5 py-2 rounded-full text-sm font-medium border transition-all shrink-0 whitespace-nowrap cursor-pointer",
+                                                "active:scale-95 select-none",
+                                                isActive
+                                                    ? "bg-foreground text-background border-foreground shadow-sm"
+                                                    : "bg-background text-foreground border-border hover:border-muted-foreground hover:bg-muted/50"
+                                            )}
+                                        >
+                                            {cat.trim()}
+                                        </button>
+                                    )
+                                })}
+                            </div>
+
+                            {/* Gradient Fade to visually blend categories behind the controls */}
+                            <div
+                                aria-hidden="true"
+                                className={cn(
+                                    "pointer-events-none absolute right-20 top-0 bottom-0 w-12 bg-linear-to-r from-transparent to-background/95 transition-opacity duration-200 hidden sm:block",
+                                    canScrollRight ? "opacity-100" : "opacity-0"
+                                )}
+                            />
+
+                            {/* Left and Right Arrow Buttons at the end ("in the last") */}
+                            <div className="flex items-center gap-1.5 shrink-0 pl-2 border-l border-border/40 bg-background/95">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => scrollCategories("left")}
+                                    disabled={!canScrollLeft}
+                                    aria-label="Scroll categories left"
                                     className={cn(
-                                        // 4. whitespace-nowrap: CRITICAL - prevents text from breaking
-                                        "px-5 py-2 rounded-full text-sm font-medium border transition-all shrink-0 whitespace-nowrap",
-                                        "active:scale-95",
-                                        activeCategory === cat
-                                            ? "bg-foreground text-background border-foreground shadow-sm"
-                                            : "bg-background text-foreground border-border hover:border-muted-foreground hover:bg-muted/50"
+                                        "h-8 w-8 rounded-full border border-border transition-all active:scale-95 cursor-pointer",
+                                        !canScrollLeft
+                                            ? "opacity-30 cursor-not-allowed pointer-events-none"
+                                            : "hover:bg-muted text-foreground"
                                     )}
                                 >
-                                    {cat}
-                                </button>
-                            ))}
+                                    <ChevronLeft className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => scrollCategories("right")}
+                                    disabled={!canScrollRight}
+                                    aria-label="Scroll categories right"
+                                    className={cn(
+                                        "h-8 w-8 rounded-full border border-border transition-all active:scale-95 cursor-pointer",
+                                        !canScrollRight
+                                            ? "opacity-30 cursor-not-allowed pointer-events-none"
+                                            : "hover:bg-muted text-foreground"
+                                    )}
+                                >
+                                    <ChevronRight className="h-4 w-4" />
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 </section>
 
                 {/* ─── ARTICLES SECTION ─── */}
                 <section id="articles" className="w-full py-10">
-                    <div className="max-w-[1200px] mx-auto px-6">
+                    <div ref={articlesSectionRef} className="max-w-[1200px] mx-auto px-6">
                         <div className="grid gap-8 lg:grid-cols-[1fr_300px]">
                             <div>
                                 {articlesToDisplay.length === 0 ? (
@@ -298,15 +630,15 @@ export default function MedicalBlogUI({
                                         {articlesToDisplay.length > 0 && (() => {
                                             const featured = articlesToDisplay[0]
                                             return (
-                                                <Link href={`/post/${featured.slug}`} className="group block mb-10">
-                                                    <article className="relative flex flex-col rounded-2xl overflow-hidden bg-card border border-border/40 shadow-[0_2px_8px_rgba(0,0,0,0.08)] transform-gpu backface-hidden">
+                                                <Link href={`/post/${featured.slug}`} className="group block mb-10 gsap-fade-item">
+                                                    <article className="relative flex flex-col rounded-2xl overflow-hidden bg-card border border-border/40 shadow-[0_2px_8px_rgba(0,0,0,0.08)] hover:shadow-[0_12px_36px_rgba(0,0,0,0.12)] dark:hover:shadow-[0_12px_36px_rgba(255,255,255,0.06)] transition-all duration-300 transform-gpu backface-hidden">
                                                         <div className="relative w-full aspect-video bg-secondary overflow-hidden -mb-px">
                                                             {featured.imageUrl ? (
                                                                 <Image
                                                                     src={featured.image ? urlFor(featured.image).width(1000).quality(80).auto('format').url() : ""}
                                                                     alt={featured.title}
                                                                     fill
-                                                                    className="object-cover"
+                                                                    className="object-cover group-hover:scale-[1.03] transition-transform duration-500 ease-out"
                                                                     priority
                                                                     sizes="(max-width: 768px) 100vw, (max-width: 1024px) 70vw, 1000px"
                                                                 />
@@ -352,7 +684,7 @@ export default function MedicalBlogUI({
                                         {/* ─── LATEST ARTICLES GRID ─── */}
                                         {articlesToDisplay.length > 1 && (
                                             <>
-                                                <h3 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase mb-5">
+                                                <h3 id="recent-articles" className="text-xs font-semibold tracking-widest text-muted-foreground uppercase mb-5 scroll-mt-24">
                                                     Recent Articles
                                                 </h3>
                                                 {(() => {
@@ -363,7 +695,7 @@ export default function MedicalBlogUI({
                                                     return (
                                                         <div className="grid gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
                                                             {paginated.map((article) => (
-                                                                <Link href={`/post/${article.slug}`} key={article.id} className="group">
+                                                                <Link href={`/post/${article.slug}`} key={article.id} className="group gsap-fade-item">
                                                                     <article className="flex flex-col rounded-2xl overflow-hidden bg-card border border-border/40 shadow-[0_1px_3px_rgba(0,0,0,0.08)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.14)] dark:hover:shadow-[0_8px_30px_rgba(255,255,255,0.08)] hover:-translate-y-1 transition-all duration-300 ease-out h-full">
                                                                         <div className="relative w-full aspect-16/11 bg-secondary overflow-hidden">
                                                                             {article.imageUrl ? (
@@ -371,7 +703,7 @@ export default function MedicalBlogUI({
                                                                                     src={article.imageUrl}
                                                                                     alt={article.title}
                                                                                     fill
-                                                                                    className="object-cover transition-transform duration-500 ease-out"
+                                                                                    className="object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
                                                                                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                                                                                 />
                                                                             ) : (
@@ -413,13 +745,31 @@ export default function MedicalBlogUI({
                                             if (pages <= 1) return null
                                             return (
                                                 <div className="flex items-center justify-start gap-1.5 mt-12">
-                                                    <Button variant="outline" size="icon" onClick={() => setCurrentPage(Math.max(1, currentPage - 1))} disabled={currentPage === 1} className="h-8 w-8 text-xs">
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        size="icon"
+                                                        onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+                                                        disabled={currentPage === 1}
+                                                        className="h-8 w-8 text-xs cursor-pointer"
+                                                        aria-label="Previous page"
+                                                    >
                                                         <ChevronLeft className="h-3.5 w-3.5" />
                                                     </Button>
                                                     {Array.from({ length: pages }, (_, i) => i + 1).map((page) => {
                                                         if (pages <= 7 || page === 1 || page === pages || Math.abs(page - currentPage) <= 1) {
                                                             return (
-                                                                <button key={page} onClick={() => setCurrentPage(page)} className={cn("h-8 w-8 rounded-md text-[13px] font-medium transition-colors", currentPage === page ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground")}>
+                                                                <button
+                                                                    type="button"
+                                                                    key={page}
+                                                                    onClick={() => handlePageChange(page)}
+                                                                    className={cn(
+                                                                        "h-8 w-8 rounded-md text-[13px] font-medium transition-colors cursor-pointer",
+                                                                        currentPage === page
+                                                                            ? "bg-foreground text-background"
+                                                                            : "text-muted-foreground hover:text-foreground"
+                                                                    )}
+                                                                >
                                                                     {page}
                                                                 </button>
                                                             )
@@ -428,7 +778,15 @@ export default function MedicalBlogUI({
                                                         if (page === pages - 1 && currentPage < pages - 2) return <span key="dots-end" className="px-1 text-muted-foreground text-xs">...</span>
                                                         return null
                                                     })}
-                                                    <Button variant="outline" size="icon" onClick={() => setCurrentPage(Math.min(pages, currentPage + 1))} disabled={currentPage === pages} className="h-8 w-8 text-xs">
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        size="icon"
+                                                        onClick={() => handlePageChange(Math.min(pages, currentPage + 1))}
+                                                        disabled={currentPage === pages}
+                                                        className="h-8 w-8 text-xs cursor-pointer"
+                                                        aria-label="Next page"
+                                                    >
                                                         <ChevronRight className="h-3.5 w-3.5" />
                                                     </Button>
                                                 </div>
@@ -439,7 +797,7 @@ export default function MedicalBlogUI({
                             </div>
 
                             {/* Sidebar */}
-                            <aside className="hidden lg:block">
+                            <aside className="hidden lg:block gsap-fade-item">
                                 <div className="sticky top-16 bg-card border border-border rounded-lg p-6 space-y-4">
                                     <h4 className="font-bold text-base">Hey, Reader!</h4>
                                     <p className="text-[13px] text-muted-foreground leading-relaxed">Struggling with health questions? We got you.</p>

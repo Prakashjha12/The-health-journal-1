@@ -85,7 +85,7 @@ export const recentPostsQuery = groq`*[_type == "post" && defined(slug.current) 
 
 export const searchPostsQuery = groq`*[_type == "post" && defined(slug.current) && 
   ($searchQuery == "" || title match $searchQuery + "*" || summary match $searchQuery + "*" || pt::text(body) match $searchQuery + "*") &&
-  ($category == "All" || $category in categories[]->title)
+  ($category == "All" || $category in categories[]->title || ($category + " ") in categories[]->title)
 ] | order(publishedAt desc) {
   _id,
   title,
@@ -95,6 +95,15 @@ export const searchPostsQuery = groq`*[_type == "post" && defined(slug.current) 
   image,
   categories[]->{ title },
   body
+}`
+
+export const categoriesQuery = groq`{
+  "postCategories": *[_type == "post" && defined(slug.current)] | order(publishedAt desc) {
+    categories[]->{ title }
+  },
+  "allCategories": *[_type == "category" && defined(title)] | order(title asc) {
+    title
+  }
 }`
 
 export const authorBySlugQuery = groq`*[_type == "author" && slug.current == $slug][0] {
@@ -126,5 +135,12 @@ export const allPostsQuery = groq`*[_type == "post" && defined(slug.current)] {
   slug,
   _updatedAt,
   publishedAt
+}`
+
+export const publishedSuggestionsQuery = groq`*[_type == "post" && defined(slug.current)] | order(publishedAt desc) {
+  _id,
+  title,
+  "slug": slug.current,
+  categories[]->{ title }
 }`
 

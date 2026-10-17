@@ -99,17 +99,33 @@ const ScrollProgress = ({
 
   useIsoLayoutEffect(() => {
     const measure = () => {
-      if (labelRef.current) setLabelWidth(labelRef.current.offsetWidth)
+      const isDesktop = typeof window !== "undefined" && window.innerWidth >= 768
+      const maxMobileLabelWidth = typeof window !== "undefined"
+        ? Math.max(120, window.innerWidth - 110)
+        : 260
+      const maxMobilePillWidth = typeof window !== "undefined"
+        ? Math.max(160, window.innerWidth - 32)
+        : 320
+
+      if (labelRef.current) {
+        const naturalWidth = Math.ceil(labelRef.current.getBoundingClientRect().width)
+        const finalWidth = isDesktop ? naturalWidth : Math.min(naturalWidth, maxMobileLabelWidth)
+        setLabelWidth(finalWidth)
+      }
       if (collapsedRef.current) {
+        const naturalWidth = Math.ceil(collapsedRef.current.getBoundingClientRect().width)
+        const finalWidth = isDesktop ? naturalWidth : Math.min(naturalWidth, maxMobilePillWidth)
         setCollapsedSize({
-          width: collapsedRef.current.offsetWidth,
-          height: collapsedRef.current.offsetHeight,
+          width: finalWidth,
+          height: Math.ceil(collapsedRef.current.getBoundingClientRect().height),
         })
       }
       if (openRef.current) {
+        const naturalWidth = Math.ceil(openRef.current.getBoundingClientRect().width)
+        const finalWidth = isDesktop ? naturalWidth : Math.min(naturalWidth, maxMobilePillWidth)
         setOpenSize({
-          width: openRef.current.offsetWidth,
-          height: openRef.current.offsetHeight,
+          width: finalWidth,
+          height: Math.ceil(openRef.current.getBoundingClientRect().height),
         })
       }
     }
@@ -120,8 +136,12 @@ const ScrollProgress = ({
     if (collapsedRef.current) ro.observe(collapsedRef.current)
     if (openRef.current) ro.observe(openRef.current)
     document.fonts?.ready.then(measure).catch(() => {})
-    return () => ro.disconnect()
-  }, [sections])
+    window.addEventListener("resize", measure)
+    return () => {
+      ro.disconnect()
+      window.removeEventListener("resize", measure)
+    }
+  }, [sections, label])
 
   React.useEffect(() => {
     if (!open) return
@@ -167,15 +187,15 @@ const ScrollProgress = ({
     <div
       ref={rootRef}
       data-slot="scroll-progress"
-      className={cn("fixed bottom-6 left-1/2 z-50 -translate-x-1/2 md:bottom-8", className)}
+      className={cn("fixed bottom-6 left-1/2 z-50 -translate-x-1/2 md:bottom-8 max-w-[calc(100vw-2rem)] md:max-w-none", className)}
       {...props}
     >
-      <div className="pointer-events-none invisible absolute" aria-hidden>
+      <div className="pointer-events-none invisible absolute left-0 top-0" aria-hidden>
         <div
           ref={collapsedRef}
-          className="inline-flex items-center gap-2.5 py-1.5 pl-2 pr-4 md:gap-3.5 md:py-2.5 md:pl-3.5 md:pr-5"
+          className="inline-flex items-center gap-2.5 py-1.5 pl-2 pr-4 md:gap-3.5 md:py-2.5 md:pl-3.5 md:pr-5 whitespace-nowrap"
         >
-          <span className="h-5 w-5 md:h-6 md:w-6" />
+          <span className="h-5 w-5 md:h-6 md:w-6 shrink-0" />
           <span
             ref={labelRef}
             className="whitespace-nowrap text-sm font-medium leading-none md:text-[15px] md:font-semibold"
@@ -183,13 +203,13 @@ const ScrollProgress = ({
             {label}
           </span>
         </div>
-        <div ref={openRef} className="w-max p-1.5 md:p-2">
+        <div ref={openRef} className="w-max p-1.5 md:p-2 whitespace-nowrap">
           {sections.map((s) => (
             <div
               key={s.id}
-              className="flex items-center gap-3 px-3 py-2 text-sm font-medium leading-none md:gap-3.5 md:px-4 md:py-2.5 md:text-[15px]"
+              className="flex items-center gap-3 px-3 py-2 text-sm font-medium leading-none md:gap-3.5 md:px-4 md:py-2.5 md:text-[15px] whitespace-nowrap"
             >
-              <span className="h-1.5 w-1.5 md:h-2 md:w-2" />
+              <span className="h-1.5 w-1.5 md:h-2 md:w-2 shrink-0" />
               <span className="whitespace-nowrap">{s.label}</span>
             </div>
           ))}
@@ -200,7 +220,7 @@ const ScrollProgress = ({
         <motion.div
           data-slot="scroll-progress-surface"
           className={cn(
-            "absolute bottom-0 left-1/2 -translate-x-1/2 overflow-hidden border border-border/60 bg-background/70 shadow-lg backdrop-blur-md",
+            "absolute bottom-0 left-1/2 -translate-x-1/2 overflow-hidden border border-border/60 bg-background/70 shadow-lg backdrop-blur-md max-w-[calc(100vw-2rem)] md:max-w-none",
             squircle
           )}
           initial={false}
@@ -215,7 +235,7 @@ const ScrollProgress = ({
             {open ? (
               <motion.ul
                 key="list"
-                className="absolute inset-0 flex flex-col p-1.5 md:p-2"
+                className="absolute inset-0 flex flex-col p-1.5 md:p-2 overflow-y-auto max-h-[65vh]"
                 initial={{
                   opacity: 0,
                   filter: reduceMotion ? undefined : "blur(4px)",
@@ -235,7 +255,7 @@ const ScrollProgress = ({
                         type="button"
                         onClick={() => selectSection(s.id)}
                         className={cn(
-                          "relative flex w-full items-center gap-3 rounded-[14px] px-3 py-2 text-left text-sm font-medium leading-none transition-colors md:gap-3.5 md:px-4 md:py-2.5 md:text-[15px] md:rounded-[16px]",
+                          "relative flex w-full items-center gap-3 rounded-[14px] px-3 py-2 text-left text-sm font-medium leading-none transition-colors md:gap-3.5 md:px-4 md:py-2.5 md:text-[15px] md:rounded-[16px] max-w-full overflow-hidden",
                           squircle,
                           isActive
                             ? "text-foreground"
@@ -272,7 +292,7 @@ const ScrollProgress = ({
                           }}
                         />
                         <motion.span
-                          className="relative whitespace-nowrap"
+                          className="relative whitespace-nowrap truncate max-w-[calc(100vw-120px)] md:max-w-none"
                           initial={
                             reduceMotion
                               ? undefined
@@ -334,7 +354,7 @@ const ScrollProgress = ({
                 </span>
 
                 <span
-                  className="relative h-5 md:h-6 shrink-0"
+                  className="relative h-5 md:h-6 shrink-0 flex items-center overflow-hidden"
                   style={{ width: labelWidth }}
                 >
                   <AnimatePresence initial={false}>
@@ -342,7 +362,7 @@ const ScrollProgress = ({
                       <motion.span
                         key={label}
                         data-slot="scroll-progress-label"
-                        className="absolute inset-y-0 left-0 flex items-center whitespace-nowrap text-sm font-medium leading-none md:text-[15px] md:font-semibold text-foreground"
+                        className="absolute inset-y-0 left-0 flex items-center whitespace-nowrap text-sm font-medium leading-none md:text-[15px] md:font-semibold text-foreground w-full truncate"
                         initial={
                           reduceMotion
                             ? { opacity: 0 }

@@ -15,6 +15,7 @@ import {
 import { ScrollProgress, type ScrollProgressSection } from '@/components/ui/scroll-progress'
 import { BookmarkButton } from '@/components/BookmarkButton'
 import { getBookmarks } from '@/lib/actions/user.actions'
+import { ArticleAnimations } from '@/components/ArticleAnimations'
 import { Metadata } from 'next'
 import { dataset, projectId } from '@/sanity/env'
 import {
@@ -443,61 +444,68 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
 
         />
         {/* ─── BREADCRUMBS ─── */}
-        <div className="max-w-[1200px] mx-auto px-6 pt-6">
-          <nav className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Link href="/" className="hover:text-foreground transition-colors">Home</Link>
-            <span className="text-muted-foreground/40">›</span>
-            <span className="text-foreground/70 truncate max-w-[300px]">{post.title}</span>
-          </nav>
-        </div>
+        <ArticleAnimations>
+          <div className="max-w-[1200px] mx-auto px-6 pt-6 article-entrance-crumb">
+            <nav className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Link href="/" className="hover:text-foreground transition-colors">Home</Link>
+              <span className="text-muted-foreground/40">›</span>
+              <span className="text-foreground/70 truncate max-w-[300px]">{post.title}</span>
+            </nav>
+          </div>
 
-        {/* ─── ARTICLE HEADER ─── */}
-        <div id="article-header" className="max-w-[1200px] mx-auto px-6 pt-8 pb-8 relative">
-          <div className="max-w-[720px]">
-            <BackButton />
-
-            <h1 className="text-3xl sm:text-4xl md:text-[42px] font-extrabold tracking-tight leading-[1.15] mt-6 mb-5">
-              {post.title}
-            </h1>
-
-            <div className="mt-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-                <time dateTime={post.publishedAt || post._createdAt} className="font-medium">
-                  <FormattedDate date={post.publishedAt || post._createdAt} options={{ month: 'long', day: 'numeric', year: 'numeric' }} />
-                </time>
-                <span className="w-1 h-1 rounded-full bg-muted-foreground/40" />
-                <ReadingTimeBadge minutes={readingTime} />
+          {/* ─── ARTICLE HEADER ─── */}
+          <div id="article-header" className="max-w-[1200px] mx-auto px-6 pt-8 pb-8 relative">
+            <div className="max-w-[720px]">
+              <div className="article-entrance-back">
+                <BackButton />
               </div>
 
-              <div className="shrink-0 md:absolute md:right-6 md:mt-0">
-                <BookmarkButton articleId={post._id} initialIsBookmarked={isBookmarked} className="rounded-md px-4 py-2 w-auto gap-2 border">
-                  <span className="text-sm font-medium">{isBookmarked ? "Saved" : "Save article"}</span>
-                </BookmarkButton>
+              <h1 className="article-entrance-title text-3xl sm:text-4xl md:text-[42px] font-extrabold tracking-tight leading-[1.15] mt-6 mb-5">
+                {post.title.split(' ').map((word: string, i: number) => (
+                  <span key={i} className="split-word inline-block mr-[0.25em]">
+                    {word}
+                  </span>
+                ))}
+              </h1>
+
+              <div className="article-entrance-meta mt-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+                  <time dateTime={post.publishedAt || post._createdAt} className="font-medium">
+                    <FormattedDate date={post.publishedAt || post._createdAt} options={{ month: 'long', day: 'numeric', year: 'numeric' }} />
+                  </time>
+                  <span className="w-1 h-1 rounded-full bg-muted-foreground/40" />
+                  <ReadingTimeBadge minutes={readingTime} />
+                </div>
+
+                <div className="shrink-0 md:absolute md:right-6 md:mt-0">
+                  <BookmarkButton articleId={post._id} initialIsBookmarked={isBookmarked} className="rounded-md px-4 py-2 w-auto gap-2 border">
+                    <span className="text-sm font-medium">{isBookmarked ? "Saved" : "Save article"}</span>
+                  </BookmarkButton>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* ─── FEATURED IMAGE ─── */}
-        {/* ─── FEATURED IMAGE ─── */}
-        {post.image && (
-          <div className="max-w-[1200px] mx-auto px-6 mb-10">
-            <div className="rounded-2xl overflow-hidden border border-border bg-secondary">
-              <Image
-                // ─── OPTIMIZATION: 1000px width + 80% quality ───
-                src={urlFor(post.image).width(1000).quality(80).auto('format').url()}
-                alt={post.image.alt || post.title}
-                width={1200}
-                height={600}
-                className="w-full h-auto object-cover max-h-[500px]"
-                // ─── CRITICAL FOR LCP ───
-                priority
-                fetchPriority="high"
-                sizes="(max-width: 768px) 100vw, 1200px"
-              />
+          {/* ─── FEATURED IMAGE ─── */}
+          {post.image && (
+            <div className="max-w-[1200px] mx-auto px-6 mb-10 article-entrance-image">
+              <div className="rounded-2xl overflow-hidden border border-border bg-secondary">
+                <Image
+                  // ─── OPTIMIZATION: 1000px width + 80% quality ───
+                  src={urlFor(post.image).width(1000).quality(80).auto('format').url()}
+                  alt={post.image.alt || post.title}
+                  width={1200}
+                  height={600}
+                  className="w-full h-auto object-cover max-h-[500px]"
+                  // ─── CRITICAL FOR LCP ───
+                  priority
+                  fetchPriority="high"
+                  sizes="(max-width: 768px) 100vw, 1200px"
+                />
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </ArticleAnimations>
 
         {/* ─── CONTENT AREA ─── */}
         <div className="max-w-[1200px] mx-auto px-6 pb-20">

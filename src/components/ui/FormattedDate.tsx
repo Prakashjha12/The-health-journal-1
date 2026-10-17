@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useSyncExternalStore } from "react"
 
 interface FormattedDateProps {
   date: string | Date
@@ -8,19 +8,23 @@ interface FormattedDateProps {
   className?: string
 }
 
+const emptySubscribe = () => () => {}
+
 export function FormattedDate({ 
   date, 
   options = { month: 'short', day: 'numeric', year: 'numeric' },
   className
 }: FormattedDateProps) {
-  const [formatted, setFormatted] = useState<string>("")
+  const isMounted = useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  )
 
-  useEffect(() => {
-    setFormatted(new Date(date).toLocaleDateString('en-US', options))
-  }, [date, options])
+  const formatted = isMounted
+    ? new Date(date).toLocaleDateString('en-US', options)
+    : ""
 
-  // Return a placeholder or the raw date string to avoid layout shift, 
-  // but suppressHydrationWarning if we render something different on server.
   return (
     <span className={className} suppressHydrationWarning>
       {formatted || "..."}

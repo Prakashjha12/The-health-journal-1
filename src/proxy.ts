@@ -1,16 +1,20 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server"
-import { NextResponse } from "next/server"
 
 // 1. Define Public Routes (The "Gate" for Google and Auth)
 const isPublicRoute = createRouteMatcher([
   "/",
+  "/about",
+  "/privacy",
+  "/terms",
   "/post(.*)",     // 🟢 CRITICAL: Allow Googlebot to see your blog posts!
+  "/author(.*)",
   "/articles(.*)", // 🟢 Add this if you have an /articles page
   "/sitemap.xml",
   "/robots.txt",
   "/sign-in(.*)", 
   "/sign-up(.*)",  
-  "/studio(.*)" 
+  "/studio(.*)",
+  "/api/revalidate-sanity(.*)" 
 ])
 
 const isDashboardRoute = createRouteMatcher(["/dashboard(.*)"])

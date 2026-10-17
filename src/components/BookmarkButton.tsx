@@ -3,7 +3,6 @@
 import * as React from "react"
 import { Bookmark } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { ConfettiButton } from "@/components/ui/confetti"
 import { toggleBookmark } from "@/lib/actions/user.actions"
 import { useAuth } from "@clerk/nextjs"
 import { useRouter } from "next/navigation"

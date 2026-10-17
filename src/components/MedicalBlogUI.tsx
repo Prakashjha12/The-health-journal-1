@@ -181,16 +181,6 @@ export default function MedicalBlogUI({
 
     const articlesToDisplay = mappedArticles.length > 0 ? mappedArticles : (initialQuery || initialCategory !== "All" ? [] : FALLBACK_ARTICLES)
 
-    const totalPages = Math.max(1, Math.ceil(articlesToDisplay.length / POSTS_PER_PAGE))
-
-    const paginatedArticles = React.useMemo(() =>
-        articlesToDisplay.slice(
-            (currentPage - 1) * POSTS_PER_PAGE,
-            currentPage * POSTS_PER_PAGE
-        ),
-        [articlesToDisplay, currentPage]
-    )
-
     return (
         <div className="flex min-h-screen flex-col bg-background text-foreground">
             <Navbar />

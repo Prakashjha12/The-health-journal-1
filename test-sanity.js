@@ -1,4 +1,4 @@
-const { createClient } = require('next-sanity');
+import { createClient } from 'next-sanity';
 const client = createClient({
   projectId: 'placeholder',
   dataset: 'placeholder',

@@ -65,7 +65,7 @@ export default function PrivacyPage() {
                             <li><strong>Analytics:</strong> We use Vercel Analytics to understand how visitors interact with our content, helping us prioritize topics of interest to our community.</li>
                         </ul>
                         <p className="text-sm italic">
-                            You can choose to disable cookies through your individual browser options, though some features like "Saved Articles" may not function correctly.
+                            You can choose to disable cookies through your individual browser options, though some features like &ldquo;Saved Articles&rdquo; may not function correctly.
                         </p>
                     </section>
 

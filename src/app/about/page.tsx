@@ -19,7 +19,7 @@ export default async function AboutPage() {
     // Fetch Dr. Rajnandini's official profile from Sanity
     const authorResponse = await sanityFetch({
         query: authorBySlugQuery,
-        params: { slug: 'dr-rajnandini-dubey' } as any,
+        params: { slug: 'dr-rajnandini-dubey' },
         tags: ['author:dr-rajnandini-dubey'],
     })
     
@@ -57,7 +57,7 @@ export default async function AboutPage() {
                                     Founded on the principle that health information should be accessible, accurate, and actionable, <strong>The Health Journal</strong> serves as a premier digital resource for the global health community.
                                 </p>
                                 <p>
-                                    We believe that understanding your body shouldn't require a medical degree. By simplifying complex research into professional guides, we empower individuals to make informed decisions about their healthcare journey.
+                                    We believe that understanding your body shouldn&apos;t require a medical degree. By simplifying complex research into professional guides, we empower individuals to make informed decisions about their healthcare journey.
                                 </p>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
                                     <div className="flex items-start gap-3 p-4 rounded-xl bg-card border border-border/60">
@@ -88,7 +88,7 @@ export default async function AboutPage() {
                             {/* Overlay tag */}
                             <div className="absolute bottom-6 left-6 bg-background/90 backdrop-blur-md p-4 rounded-2xl border border-border">
                                 <p className="text-sm font-bold">Standard of Excellence</p>
-                                <p className="text-xs text-muted-foreground italic">"Trust through transparency"</p>
+                                <p className="text-xs text-muted-foreground italic">&ldquo;Trust through transparency&rdquo;</p>
                             </div>
                         </div>
                     </div>
@@ -145,7 +145,7 @@ export default async function AboutPage() {
                                             ) : (
                                                 <>
                                                     <p>
-                                                        "Medical knowledge shouldn't be a privilege. My goal is to transform complex clinical data into actionable lifestyle improvements for our readers."
+                                                        &ldquo;Medical knowledge shouldn&apos;t be a privilege. My goal is to transform complex clinical data into actionable lifestyle improvements for our readers.&rdquo;
                                                     </p>
                                                     <p className="not-italic text-base">
                                                         Dr. Rajnandini Dubey is a healthcare specialist dedicated to evidence-based medical journalism. She oversees all clinical content on The Health Journal, ensuring every guide and research breakdown meets rigorous accuracy standards.

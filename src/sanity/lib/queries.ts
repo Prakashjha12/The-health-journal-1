@@ -84,7 +84,7 @@ export const recentPostsQuery = groq`*[_type == "post" && defined(slug.current) 
 }`
 
 export const searchPostsQuery = groq`*[_type == "post" && defined(slug.current) && 
-  ($query == "" || title match $query + "*" || summary match $query + "*" || pt::text(body) match $query + "*") &&
+  ($searchQuery == "" || title match $searchQuery + "*" || summary match $searchQuery + "*" || pt::text(body) match $searchQuery + "*") &&
   ($category == "All" || $category in categories[]->title)
 ] | order(publishedAt desc) {
   _id,

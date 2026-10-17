@@ -16,7 +16,7 @@ import { FormattedDate } from "@/components/ui/FormattedDate"
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const authorResponse = await sanityFetch({ query: authorBySlugQuery, params: { slug } as any });
+  const authorResponse = await sanityFetch({ query: authorBySlugQuery, params: { slug } });
   const author = authorResponse?.data;
 
   if (!author) return { title: "Author Not Found" };
@@ -38,7 +38,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 export default async function AuthorPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   const isConfigured = projectId !== 'placeholder' && dataset !== 'placeholder'
-  const authorResponse = isConfigured ? await sanityFetch({ query: authorBySlugQuery, params: { slug } as any }) : null
+  const authorResponse = isConfigured ? await sanityFetch({ query: authorBySlugQuery, params: { slug } }) : null
   const author = authorResponse?.data || null
 
   if (!author) {
@@ -178,7 +178,16 @@ export default async function AuthorPage({ params }: { params: Promise<{ slug: s
 
           {author.posts && author.posts.length > 0 ? (
             <div className="grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
-              {author.posts.map((post: any, index: number) => {
+              {author.posts.map((post: {
+                _id: string;
+                title: string;
+                slug: string;
+                publishedAt?: string;
+                _createdAt?: string;
+                categories?: { title: string }[];
+                image?: Parameters<typeof urlFor>[0] | null;
+                body?: unknown[];
+              }) => {
                 const readTimeVal = calculateReadingTime(post.body)
                 const displayDate = post.publishedAt || post._createdAt || "2024-01-01"
                 const category = post.categories && post.categories.length > 0 && post.categories[0].title

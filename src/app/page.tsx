@@ -3,7 +3,6 @@ import { searchPostsQuery } from '@/sanity/lib/queries'
 import MedicalBlogUI from '@/components/MedicalBlogUI'
 import { getBookmarks } from '@/lib/actions/user.actions'
 import { urlFor } from '@/sanity/lib/image'
-import { Metadata } from 'next'
 
 interface Post {
   _id: string;
@@ -85,7 +84,7 @@ export default async function Home({
   const postsResponse = isConfigured
     ? await sanityFetch({
       query: searchPostsQuery,
-      params: { query, category } as any,
+      params: { searchQuery: query, category },
     })
     : { data: [] }
   const posts: Post[] = postsResponse.data

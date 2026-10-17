@@ -22,42 +22,6 @@ function FacebookIcon({ className }: { className?: string }) {
     )
 }
 
-export function ReadingProgressBar() {
-    const [progress, setProgress] = React.useState(0)
-
-    React.useEffect(() => {
-        let ticking = false
-
-        const handleScroll = () => {
-            if (!ticking) {
-                requestAnimationFrame(() => {
-                    const scrollTop = window.scrollY
-                    const docHeight = document.documentElement.scrollHeight - window.innerHeight
-                    const scrollPercent = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0
-                    setProgress(Math.min(100, Math.max(0, scrollPercent)))
-                    ticking = false
-                })
-                ticking = true
-            }
-        }
-
-        window.addEventListener("scroll", handleScroll, { passive: true })
-        return () => window.removeEventListener("scroll", handleScroll)
-    }, [])
-
-    return (
-        <div className="fixed top-14 left-0 right-0 z-40 h-[3px] bg-transparent">
-            <div
-                className="h-full bg-foreground/80 origin-left will-change-transform"
-                style={{
-                    transform: `scaleX(${progress / 100})`,
-                    transition: 'transform 100ms ease-out'
-                }}
-            />
-        </div>
-    )
-}
-
 export function ReadingTimeBadge({ minutes }: { minutes: number }) {
     return (
         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-muted text-muted-foreground">

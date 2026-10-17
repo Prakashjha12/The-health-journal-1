@@ -1,6 +1,6 @@
 import { sanityFetch } from '../../../sanity/lib/live'
 import { postBySlugQuery, recentPostsQuery } from '../../../sanity/lib/queries'
-import { PortableText } from '@portabletext/react'
+import { PortableText, type PortableTextComponents } from '@portabletext/react'
 import Image from 'next/image'
 import { urlFor } from '../../../sanity/lib/image'
 import Link from 'next/link'
@@ -8,11 +8,11 @@ import { Stethoscope } from 'lucide-react'
 import { Navbar } from '@/components/Navbar'
 import { calculateReadingTime } from '@/lib/utils'
 import {
-  ReadingProgressBar,
   ReadingTimeBadge,
   SocialShareSidebar,
   BackButton,
 } from '@/components/BlogPostClient'
+import { ScrollProgress, type ScrollProgressSection } from '@/components/ui/scroll-progress'
 import { BookmarkButton } from '@/components/BookmarkButton'
 import { getBookmarks } from '@/lib/actions/user.actions'
 import { Metadata } from 'next'
@@ -38,7 +38,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const postResponse = isConfigured
     ? await sanityFetch({
       query: postBySlugQuery,
-      params: { slug } as any,
+      params: { slug },
       tags: ['posts', `post:${slug}`],
     })
     : null
@@ -76,7 +76,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 }
 
 
-const portableTextComponents = {
+const portableTextComponents: PortableTextComponents = {
   types: {
     image: ({ value }: { value: { asset: object; alt?: string } }) => {
       if (!value?.asset) return null
@@ -94,6 +94,21 @@ const portableTextComponents = {
     },
   },
   block: {
+    h2: ({ children, value }) => {
+      const text = value?.children
+        ?.map((c) => ('text' in c ? c.text : ''))
+        .join('')
+        .trim() || ''
+      const id = text
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '') || 'section'
+      return (
+        <h2 id={id} className="scroll-mt-24 text-2xl mt-10 mb-4 font-bold tracking-tight">
+          {children}
+        </h2>
+      )
+    },
     blockquote: ({ children }: { children?: React.ReactNode }) => (
       <blockquote className="my-8 border-l-4 border-primary bg-zinc-100/80 dark:bg-zinc-900/50 py-6 pl-8 pr-6 rounded-r-xl shadow-sm italic text-zinc-800 dark:text-zinc-200 text-lg leading-relaxed">
         {children}
@@ -134,7 +149,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
   const postResponse = isConfigured
     ? await sanityFetch({
       query: postBySlugQuery,
-      params: { slug } as any,
+      params: { slug },
       tags: ['posts', `post:${slug}`], // ✅ This matches the "Known Properties"
     })
     : null
@@ -158,9 +173,28 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
   const bookmarkedArticleIds = await getBookmarks()
   const isBookmarked = bookmarkedArticleIds.includes(post._id)
 
-  const recentPostsResponse = isConfigured ? await sanityFetch({ query: recentPostsQuery, params: { slug } as any }) : { data: [] }
+  interface RecentArticleCard {
+    id: string;
+    title: string;
+    slug: string;
+    category: string;
+    readTime: string;
+    date: string;
+    imageUrl: string | null;
+  }
+
+  const recentPostsResponse = isConfigured ? await sanityFetch({ query: recentPostsQuery, params: { slug } }) : { data: [] }
   const recentPostsData = recentPostsResponse?.data || []
-  const recentArticles = recentPostsData.map((rp: any, index: number) => {
+  const recentArticles: RecentArticleCard[] = recentPostsData.map((rp: {
+    _id: string;
+    title: string;
+    slug?: { current?: string };
+    publishedAt?: string;
+    _createdAt?: string;
+    categories?: { title: string }[];
+    image?: Parameters<typeof urlFor>[0] | null;
+    body?: unknown[];
+  }) => {
     const displayDate = rp.publishedAt || rp._createdAt || "2024-01-01"
     const readTimeVal = calculateReadingTime(rp.body)
     const postCategory = rp.categories && rp.categories.length > 0 && rp.categories[0].title
@@ -177,9 +211,35 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
     }
   })
 
+  interface BodyBlock {
+    _type?: string;
+    style?: string;
+    children?: { text?: string }[];
+  }
+
+  const rawBody = Array.isArray(post.body) ? (post.body as BodyBlock[]) : []
+  const dynamicSections: ScrollProgressSection[] = rawBody
+    .filter((block) => block._type === 'block' && block.style === 'h2')
+    .map((block) => {
+      const label = block.children?.map((c) => c.text || '').join('').trim() || ''
+      const id = label
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '') || 'section'
+      return { id, label }
+    })
+    .filter((s) => s.label.length > 0)
+
+  const sections: ScrollProgressSection[] = [
+    { id: 'article-header', label: 'Intro' },
+    ...dynamicSections,
+    ...(post.faqs && post.faqs.length > 0 ? [{ id: 'faq-section', label: 'FAQ' }] : []),
+    ...(recentArticles.length > 0 ? [{ id: 'read-next', label: 'Read Next' }] : []),
+  ]
+
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
-      <ReadingProgressBar />
+      <ScrollProgress sections={sections} />
 
       <Navbar />
 
@@ -367,7 +427,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
                 // ─── FAQ SCHEMA ───
                 ...(post.faqs && post.faqs.length > 0 ? [{
                   "@type": "FAQPage",
-                  "mainEntity": post.faqs.map((faq: any) => ({
+                  "mainEntity": post.faqs.map((faq: { question: string; answer: string }) => ({
                     "@type": "Question",
                     "name": faq.question,
                     "acceptedAnswer": {
@@ -392,7 +452,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
         </div>
 
         {/* ─── ARTICLE HEADER ─── */}
-        <div className="max-w-[1200px] mx-auto px-6 pt-8 pb-8 relative">
+        <div id="article-header" className="max-w-[1200px] mx-auto px-6 pt-8 pb-8 relative">
           <div className="max-w-[720px]">
             <BackButton />
 
@@ -515,7 +575,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
 
         {/* ─── FAQ SECTION ─── */}
         {post.faqs && post.faqs.length > 0 && (
-          <div className="max-w-[720px] mx-auto px-6 pb-16">
+          <div id="faq-section" className="max-w-[720px] mx-auto px-6 pb-16">
             <h2 className="text-2xl font-bold tracking-tight mb-6">Frequently Asked Questions</h2>
             <Accordion type="single" collapsible className="w-full space-y-2">
               {post.faqs.map((faq: { question: string; answer: string }, index: number) => (
@@ -641,10 +701,10 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
 
         {/* ─── READ NEXT ─── */}
         {recentArticles.length > 0 && (
-          <div className="max-w-[1200px] mx-auto px-6 pb-20 border-t border-border pt-16">
+          <div id="read-next" className="max-w-[1200px] mx-auto px-6 pb-20 border-t border-border pt-16">
             <h2 className="text-2xl font-bold tracking-tight mb-8">Read Next</h2>
             <div className="grid gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
-              {recentArticles.map((article: any) => (
+              {recentArticles.map((article: RecentArticleCard) => (
                 <Link href={`/post/${article.slug}`} key={article.id} className="group">
                   <article className="flex flex-col rounded-2xl overflow-hidden bg-card border border-border/40 shadow-[0_1px_3px_rgba(0,0,0,0.08)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:-translate-y-1 transition-all duration-300 ease-out h-full">
                     {/* Card Image */}

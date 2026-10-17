@@ -98,7 +98,10 @@ const ScrollProgress = ({
   const [labelWidth, setLabelWidth] = React.useState<number>()
 
   useIsoLayoutEffect(() => {
+    let isMounted = true
+
     const measure = () => {
+      if (!isMounted) return
       const isDesktop = typeof window !== "undefined" && window.innerWidth >= 768
       const maxMobileLabelWidth = typeof window !== "undefined"
         ? Math.max(120, window.innerWidth - 110)
@@ -135,9 +138,14 @@ const ScrollProgress = ({
     if (labelRef.current) ro.observe(labelRef.current)
     if (collapsedRef.current) ro.observe(collapsedRef.current)
     if (openRef.current) ro.observe(openRef.current)
-    document.fonts?.ready.then(measure).catch(() => {})
+    document.fonts?.ready
+      .then(() => {
+        if (isMounted) measure()
+      })
+      .catch(() => {})
     window.addEventListener("resize", measure)
     return () => {
+      isMounted = false
       ro.disconnect()
       window.removeEventListener("resize", measure)
     }
@@ -190,7 +198,7 @@ const ScrollProgress = ({
       className={cn("fixed bottom-6 left-1/2 z-50 -translate-x-1/2 md:bottom-8 max-w-[calc(100vw-2rem)] md:max-w-none", className)}
       {...props}
     >
-      <div className="pointer-events-none invisible absolute left-0 top-0" aria-hidden>
+      <div className="pointer-events-none invisible fixed -left-full -top-full max-w-none" aria-hidden>
         <div
           ref={collapsedRef}
           className="inline-flex items-center gap-2.5 py-1.5 pl-2 pr-4 md:gap-3.5 md:py-2.5 md:pl-3.5 md:pr-5 whitespace-nowrap"
@@ -255,7 +263,7 @@ const ScrollProgress = ({
                         type="button"
                         onClick={() => selectSection(s.id)}
                         className={cn(
-                          "relative flex w-full items-center gap-3 rounded-[14px] px-3 py-2 text-left text-sm font-medium leading-none transition-colors md:gap-3.5 md:px-4 md:py-2.5 md:text-[15px] md:rounded-[16px] max-w-full overflow-hidden",
+                          "relative flex w-full items-center gap-3 rounded-[14px] px-3 py-2 text-left text-sm font-medium leading-none transition-colors md:gap-3.5 md:px-4 md:py-2.5 md:text-[15px] md:rounded-3xl max-w-full overflow-hidden",
                           squircle,
                           isActive
                             ? "text-foreground"
@@ -266,7 +274,7 @@ const ScrollProgress = ({
                           <motion.span
                             layoutId={`${layoutId}-active`}
                             className={cn(
-                              "absolute inset-0 rounded-[14px] md:rounded-[16px] bg-foreground/10",
+                              "absolute inset-0 rounded-[14px] md:rounded-3xl bg-foreground/10",
                               squircle
                             )}
                             transition={

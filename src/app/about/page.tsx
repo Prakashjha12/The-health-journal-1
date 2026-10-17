@@ -32,7 +32,7 @@ export default async function AboutPage() {
             <main className="flex-1">
                 {/* Hero Section */}
                 <section className="relative py-20 overflow-hidden bg-zinc-50 dark:bg-zinc-950 border-b border-border/50">
-                    <div className="max-w-[1200px] mx-auto px-6 relative z-10">
+                    <div className="max-w-300 mx-auto px-6 relative z-10">
                         <div className="max-w-3xl">
                             <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-6">
                                 Demystifying Medicine for <span className="text-primary-600 dark:text-blue-500">Everyone.</span>
@@ -45,7 +45,7 @@ export default async function AboutPage() {
                 </section>
 
                 {/* Mission Section */}
-                <section className="py-24 max-w-[1200px] mx-auto px-6">
+                <section className="py-24 max-w-300 mx-auto px-6">
                     <div className="grid md:grid-cols-2 gap-16 items-center">
                         <div>
                             <h2 className="text-3xl font-bold mb-8 flex items-center gap-3">
@@ -96,7 +96,7 @@ export default async function AboutPage() {
 
                 {/* Medical Editorial Team */}
                 <section className="py-24 bg-zinc-50 dark:bg-zinc-950">
-                    <div className="max-w-[1200px] mx-auto px-6">
+                    <div className="max-w-300 mx-auto px-6">
                         <div className="text-center max-w-2xl mx-auto mb-16">
                             <h2 className="text-3xl md:text-4xl font-bold mb-4">Our Medical Editorial Team</h2>
                             <p className="text-muted-foreground text-lg">

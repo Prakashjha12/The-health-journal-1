@@ -139,6 +139,7 @@ export default function MedicalBlogUI({
     const activeCategoryRef = React.useRef<HTMLButtonElement>(null)
     const heroRef = React.useRef<HTMLDivElement>(null)
     const articlesSectionRef = React.useRef<HTMLDivElement>(null)
+    const scrollTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)
     const [canScrollLeft, setCanScrollLeft] = React.useState(false)
     const [canScrollRight, setCanScrollRight] = React.useState(false)
 
@@ -306,6 +307,14 @@ export default function MedicalBlogUI({
         return false
     }
 
+    React.useEffect(() => {
+        return () => {
+            if (scrollTimerRef.current) {
+                clearTimeout(scrollTimerRef.current)
+            }
+        }
+    }, [])
+
     const scrollCategories = (direction: "left" | "right") => {
         const el = categoryScrollRef.current
         if (!el) return
@@ -314,7 +323,8 @@ export default function MedicalBlogUI({
             left: direction === "left" ? -amount : amount,
             behavior: "smooth"
         })
-        setTimeout(checkScrollability, 350)
+        if (scrollTimerRef.current) clearTimeout(scrollTimerRef.current)
+        scrollTimerRef.current = setTimeout(checkScrollability, 350)
     }
 
     React.useEffect(() => {
@@ -324,7 +334,8 @@ export default function MedicalBlogUI({
                 block: "nearest",
                 inline: "nearest"
             })
-            setTimeout(checkScrollability, 350)
+            if (scrollTimerRef.current) clearTimeout(scrollTimerRef.current)
+            scrollTimerRef.current = setTimeout(checkScrollability, 350)
         }
     }, [activeCategory, checkScrollability])
 
@@ -399,13 +410,13 @@ export default function MedicalBlogUI({
                             cx={1}
                             cy={1}
                             cr={1.2}
-                            className="fill-black/[0.15] dark:fill-white/[0.15] text-black/[0.15] dark:text-white/[0.15] [mask-image:linear-gradient(to_bottom,black_30%,transparent)] "
+                            className="fill-black/15 dark:fill-white/15 text-black/15 dark:text-white/15 mask-[linear-gradient(to_bottom,black_30%,transparent)] "
                         />
                     </div>
                     <div className="sr-only">
                         <h2>The Health Journal: Evidence-based medical insights, wellness tips, and research breakdowns by healthcare professionals.</h2>
                     </div>
-                    <div ref={heroRef} className=" relative z-10 max-w-[1200px] mx-auto px-6 cursor-default ">
+                    <div ref={heroRef} className=" relative z-10 max-w-300 mx-auto px-6 cursor-default ">
                         <div className="mb-10 px-4 md:px-0">
                             <h1 className="gsap-hero-title text-[36px] md:text-[68px] font-extrabold leading-[1.1] tracking-tighter text-zinc-900 dark:text-zinc-50 transition-colors duration-300">
                                 The Health Journal
@@ -416,11 +427,11 @@ export default function MedicalBlogUI({
                                     Get evidence-based answers.
                                 </span>
                             </p>
-                            <div className="gsap-hero-divider mt-8 h-[1px] w-full bg-zinc-200 dark:bg-zinc-800" />
+                            <div className="gsap-hero-divider mt-8 h-px w-full bg-zinc-200 dark:bg-zinc-800" />
                         </div>
 
                         {/* Search Bar with Live Suggestions Dropdown */}
-                        <div ref={searchContainerRef} className="gsap-hero-search relative max-w-[500px] mb-5 z-40">
+                        <div ref={searchContainerRef} className="gsap-hero-search relative max-w-125 mb-5 z-40">
                             <form onSubmit={handleSearch} className="flex items-center gap-0 w-full relative">
                                 <div className="relative flex-1">
                                     <Input
@@ -472,7 +483,7 @@ export default function MedicalBlogUI({
                                     </div>
 
                                     {suggestions.length > 0 ? (
-                                        <ul className="max-h-[300px] overflow-y-auto divide-y divide-border/30">
+                                        <ul className="max-h-75 overflow-y-auto divide-y divide-border/30">
                                             {suggestions.map((item, idx) => {
                                                 const categoryTitle = item.categories && item.categories.length > 0 ? item.categories[0].title : null
                                                 const isHighlighted = idx === highlightedIndex
@@ -528,7 +539,7 @@ export default function MedicalBlogUI({
                             )}
                         </div>
 
-                        <p className="gsap-hero-desc text-muted-foreground text-base leading-relaxed max-w-[520px]">
+                        <p className="gsap-hero-desc text-muted-foreground text-base leading-relaxed max-w-130">
                             Your go-to source for evidence-based medical insights. We&apos;ve got wellness tips that actually work, research breakdowns that make sense, and health guides to live your best life.
                         </p>
                     </div>
@@ -536,7 +547,7 @@ export default function MedicalBlogUI({
 
                 {/* ─── CATEGORY TABS ─── */}
                 <section className="w-full sticky top-0 z-20 bg-background/95 backdrop-blur-sm border-b border-border/40">
-                    <div className="max-w-[1200px] mx-auto px-6">
+                    <div className="max-w-300 mx-auto px-6">
                         <div className="relative flex items-center py-3 gap-2">
                             {/* Scrollable Categories List */}
                             <div
@@ -615,7 +626,7 @@ export default function MedicalBlogUI({
 
                 {/* ─── ARTICLES SECTION ─── */}
                 <section id="articles" className="w-full py-10">
-                    <div ref={articlesSectionRef} className="max-w-[1200px] mx-auto px-6">
+                    <div ref={articlesSectionRef} className="max-w-300 mx-auto px-6">
                         <div className="grid gap-8 lg:grid-cols-[1fr_300px]">
                             <div>
                                 {articlesToDisplay.length === 0 ? (

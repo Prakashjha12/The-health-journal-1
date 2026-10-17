@@ -83,7 +83,7 @@ export default async function AuthorPage({ params }: { params: Promise<{ slug: s
         />
         {/* ─── AUTHOR HEADER SECTION ─── */}
         <div className="bg-muted/30 border-b border-border">
-          <div className="max-w-[1000px] mx-auto px-6 py-16 md:py-24">
+          <div className="max-w-250 mx-auto px-6 py-16 md:py-24">
             <div className="flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-12">
 
               {/* Profile Image */}
@@ -93,11 +93,11 @@ export default async function AuthorPage({ params }: { params: Promise<{ slug: s
                   alt={author.name}
                   width={150}
                   height={150}
-                  className="rounded-full object-cover w-[150px] h-[150px] md:w-[200px] md:h-[200px] border-4 border-background shadow-xl shrink-0 bg-secondary"
+                  className="rounded-full object-cover w-37.5 h-37.5 md:w-50 md:h-50 border-4 border-background shadow-xl shrink-0 bg-secondary"
                   priority
                 />
               ) : (
-                <div className="w-[150px] h-[150px] md:w-[200px] md:h-[200px] rounded-full border-4 border-background shadow-xl bg-muted flex items-center justify-center shrink-0">
+                <div className="w-37.5 h-37.5 md:w-50 md:h-50 rounded-full border-4 border-background shadow-xl bg-muted flex items-center justify-center shrink-0">
                   <Stethoscope className="h-16 w-16 text-muted-foreground" />
                 </div>
               )}
@@ -168,7 +168,7 @@ export default async function AuthorPage({ params }: { params: Promise<{ slug: s
         </div>
 
         {/* ─── AUTHOR'S POSTS ─── */}
-        <div className="max-w-[1200px] mx-auto px-6 py-20">
+        <div className="max-w-300 mx-auto px-6 py-20">
           <div className="flex items-center gap-3 mb-10">
             <h2 className="text-3xl font-bold tracking-tight">Articles by {author.name.split(' ')[0]}</h2>
             <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-bold">
@@ -248,7 +248,7 @@ export default async function AuthorPage({ params }: { params: Promise<{ slug: s
 
       {/* ─── FOOTER ─── */}
       <footer className="w-full border-t border-border bg-background">
-        <div className="max-w-[1200px] mx-auto px-6 py-10">
+        <div className="max-w-300 mx-auto px-6 py-10">
 
           {/* Medical Disclaimer */}
           <div className="mt-8 mb-4 p-4 rounded-lg bg-muted/50 border border-border/50 text-center">

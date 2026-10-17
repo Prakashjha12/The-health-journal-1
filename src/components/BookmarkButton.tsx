@@ -22,6 +22,15 @@ export function BookmarkButton({ articleId, initialIsBookmarked = false, classNa
     const [isBookmarked, setIsBookmarked] = React.useState(initialIsBookmarked)
     const [isPending, startTransition] = React.useTransition()
 
+    const isMountedRef = React.useRef(true)
+
+    React.useEffect(() => {
+        isMountedRef.current = true
+        return () => {
+            isMountedRef.current = false
+        }
+    }, [])
+
     React.useEffect(() => {
         setIsBookmarked(initialIsBookmarked)
     }, [initialIsBookmarked])
@@ -37,11 +46,15 @@ export function BookmarkButton({ articleId, initialIsBookmarked = false, classNa
         startTransition(async () => {
             try {
                 const bookmarked = await toggleBookmark(articleId)
-                setIsBookmarked(bookmarked)
+                if (isMountedRef.current) {
+                    setIsBookmarked(bookmarked)
+                }
                 router.refresh()
             } catch (error) {
                 // Revert optimistic update on error
-                setIsBookmarked(isBookmarked)
+                if (isMountedRef.current) {
+                    setIsBookmarked(isBookmarked)
+                }
                 console.error("Failed to toggle bookmark:", error)
             }
         })

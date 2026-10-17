@@ -93,6 +93,12 @@ const ConfettiComponent = forwardRef<ConfettiRef, Props>((props, ref) => {
                 }
             })()
         }
+        return () => {
+            if (instanceRef.current) {
+                instanceRef.current.reset()
+                instanceRef.current = null
+            }
+        }
     }, [manualstart, fire])
 
     return (

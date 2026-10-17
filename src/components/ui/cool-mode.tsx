@@ -218,16 +218,20 @@ const applyParticleEffect = (
     element.removeEventListener(tapEnd, disableAutoAddParticle)
     element.removeEventListener("mouseleave", disableAutoAddParticle)
 
-    const interval = setInterval(() => {
-      if (animationFrame && particles.length === 0) {
-        cancelAnimationFrame(animationFrame)
-        clearInterval(interval)
+    if (animationFrame) {
+      cancelAnimationFrame(animationFrame)
+      animationFrame = undefined
+    }
 
-        if (--instanceCounter === 0) {
-          container.remove()
-        }
-      }
-    }, 500)
+    particles.forEach((p) => {
+      p.element.remove()
+    })
+    particles = []
+
+    instanceCounter = Math.max(0, instanceCounter - 1)
+    if (instanceCounter === 0 && container.parentNode) {
+      container.remove()
+    }
   }
 }
 

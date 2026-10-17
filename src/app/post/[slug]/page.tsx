@@ -95,6 +95,9 @@ const portableTextComponents: PortableTextComponents = {
     },
   },
   block: {
+    normal: ({ children }: { children?: React.ReactNode }) => (
+      <p className="[overflow-wrap:anywhere] break-words">{children}</p>
+    ),
     h2: ({ children, value }) => {
       const text = value?.children
         ?.map((c) => ('text' in c ? c.text : ''))
@@ -105,15 +108,31 @@ const portableTextComponents: PortableTextComponents = {
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/(^-|-$)/g, '') || 'section'
       return (
-        <h2 id={id} className="scroll-mt-24 text-2xl mt-10 mb-4 font-bold tracking-tight">
+        <h2 id={id} className="scroll-mt-24 text-2xl mt-10 mb-4 font-bold tracking-tight [overflow-wrap:anywhere] break-words">
           {children}
         </h2>
       )
     },
     blockquote: ({ children }: { children?: React.ReactNode }) => (
-      <blockquote className="my-8 border-l-4 border-primary bg-zinc-100/80 dark:bg-zinc-900/50 py-6 pl-8 pr-6 rounded-r-xl shadow-sm italic text-zinc-800 dark:text-zinc-200 text-lg leading-relaxed">
+      <blockquote className="my-8 border-l-4 border-primary bg-zinc-100/80 dark:bg-zinc-900/50 py-6 pl-8 pr-6 rounded-r-xl shadow-sm italic text-zinc-800 dark:text-zinc-200 text-lg leading-relaxed [overflow-wrap:anywhere] break-words">
         {children}
       </blockquote>
+    ),
+  },
+  list: {
+    bullet: ({ children }: { children?: React.ReactNode }) => (
+      <ul className="list-disc pl-5 [overflow-wrap:anywhere] break-words space-y-1">{children}</ul>
+    ),
+    number: ({ children }: { children?: React.ReactNode }) => (
+      <ol className="list-decimal pl-5 [overflow-wrap:anywhere] break-words space-y-1">{children}</ol>
+    ),
+  },
+  listItem: {
+    bullet: ({ children }: { children?: React.ReactNode }) => (
+      <li className="[overflow-wrap:anywhere] break-words">{children}</li>
+    ),
+    number: ({ children }: { children?: React.ReactNode }) => (
+      <li className="[overflow-wrap:anywhere] break-words">{children}</li>
     ),
   },
   marks: {
@@ -124,7 +143,7 @@ const portableTextComponents: PortableTextComponents = {
       if (isInternal) {
         const path = href.replace('https://thehealthjournal.in', '')
         return (
-          <Link href={path} className="text-primary hover:underline underline-offset-4 decoration-primary/40 transition-all font-medium">
+          <Link href={path} className="text-primary hover:underline underline-offset-4 decoration-primary/40 transition-all font-medium break-all [overflow-wrap:anywhere]">
             {children}
           </Link>
         )
@@ -135,7 +154,7 @@ const portableTextComponents: PortableTextComponents = {
           href={href}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-primary hover:underline underline-offset-4 decoration-primary/40 transition-all font-medium"
+          className="text-primary hover:underline underline-offset-4 decoration-primary/40 transition-all font-medium break-all [overflow-wrap:anywhere]"
         >
           {children}
         </a>
@@ -244,7 +263,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
 
       <Navbar />
 
-      <main className="flex-1">
+      <main className="flex-1 w-full max-w-full overflow-x-clip">
         <script
           // type="application/ld+json"
           // dangerouslySetInnerHTML={{
@@ -445,17 +464,17 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
         />
         {/* ─── BREADCRUMBS ─── */}
         <ArticleAnimations>
-          <div className="max-w-[1200px] mx-auto px-6 pt-6 article-entrance-crumb">
+          <div className="max-w-300 mx-auto px-6 pt-6 article-entrance-crumb">
             <nav className="flex items-center gap-2 text-xs text-muted-foreground">
               <Link href="/" className="hover:text-foreground transition-colors">Home</Link>
               <span className="text-muted-foreground/40">›</span>
-              <span className="text-foreground/70 truncate max-w-[300px]">{post.title}</span>
+              <span className="text-foreground/70 truncate max-w-75">{post.title}</span>
             </nav>
           </div>
 
           {/* ─── ARTICLE HEADER ─── */}
-          <div id="article-header" className="max-w-[1200px] mx-auto px-6 pt-8 pb-8 relative">
-            <div className="max-w-[720px]">
+          <div id="article-header" className="max-w-300 mx-auto px-6 pt-8 pb-8 relative">
+            <div className="max-w-180">
               <div className="article-entrance-back">
                 <BackButton />
               </div>
@@ -488,7 +507,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
 
           {/* ─── FEATURED IMAGE ─── */}
           {post.image && (
-            <div className="max-w-[1200px] mx-auto px-6 mb-10 article-entrance-image">
+            <div className="max-w-300 mx-auto px-6 mb-10 article-entrance-image">
               <div className="rounded-2xl overflow-hidden border border-border bg-secondary">
                 <Image
                   // ─── OPTIMIZATION: 1000px width + 80% quality ───
@@ -496,7 +515,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
                   alt={post.image.alt || post.title}
                   width={1200}
                   height={600}
-                  className="w-full h-auto object-cover max-h-[500px]"
+                  className="w-full h-auto object-cover max-h-125"
                   // ─── CRITICAL FOR LCP ───
                   priority
                   fetchPriority="high"
@@ -508,8 +527,8 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
         </ArticleAnimations>
 
         {/* ─── CONTENT AREA ─── */}
-        <div className="max-w-[1200px] mx-auto px-6 pb-20">
-          <div className="grid gap-8 lg:grid-cols-[60px_1fr_300px]">
+        <div className="max-w-300 mx-auto px-6 pb-20 w-full overflow-x-clip">
+          <div className="grid gap-8 lg:grid-cols-[60px_1fr_300px] min-w-0 max-w-full">
             {/* Social Share Sidebar */}
             <aside className="hidden lg:block">
               <div className="sticky top-20">
@@ -518,14 +537,14 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
             </aside>
 
             {/* Article Body */}
-            <article className="min-w-0">
-              <div className="prose prose-zinc dark:prose-invert md:prose-lg max-w-none
+            <article className="min-w-0 max-w-full overflow-x-clip [overflow-wrap:anywhere] break-words">
+              <div className="prose prose-zinc dark:prose-invert md:prose-lg max-w-none min-w-0 [overflow-wrap:anywhere] break-words
                                 prose-headings:font-bold prose-headings:tracking-tight
                                 prose-h2:text-2xl prose-h2:mt-10 prose-h2:mb-4
                                 prose-h3:text-xl prose-h3:mt-8 prose-h3:mb-3
-                                prose-p:leading-[1.8] prose-p:text-[15px] prose-p:text-foreground/85
-                                prose-li:text-[15px] prose-li:leading-[1.8]
-                                prose-a:text-foreground prose-a:underline prose-a:underline-offset-2 prose-a:decoration-foreground/30 hover:prose-a:decoration-foreground
+                                prose-p:leading-[1.8] prose-p:text-[15px] prose-p:text-foreground/85 prose-p:[overflow-wrap:anywhere] prose-p:break-words
+                                prose-li:text-[15px] prose-li:leading-[1.8] prose-li:[overflow-wrap:anywhere] prose-li:break-words
+                                prose-a:text-foreground prose-a:underline prose-a:underline-offset-2 prose-a:decoration-foreground/30 hover:prose-a:decoration-foreground prose-a:break-all prose-a:[overflow-wrap:anywhere]
                                 prose-blockquote:not-prose
                                 prose-img:rounded-xl prose-img:border prose-img:border-border
                                 prose-code:text-sm prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:before:content-none prose-code:after:content-none
@@ -583,7 +602,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
 
         {/* ─── FAQ SECTION ─── */}
         {post.faqs && post.faqs.length > 0 && (
-          <div id="faq-section" className="max-w-[720px] mx-auto px-6 pb-16">
+          <div id="faq-section" className="max-w-180 mx-auto px-6 pb-16">
             <h2 className="text-2xl font-bold tracking-tight mb-6">Frequently Asked Questions</h2>
             <Accordion type="single" collapsible className="w-full space-y-2">
               {post.faqs.map((faq: { question: string; answer: string }, index: number) => (
@@ -605,11 +624,11 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
         )}
 
         {/* ─── AUTHOR & REVIEWER PROFILES ─── */}
-        <div className="max-w-[1000px] mx-auto px-6 pb-20 mt-10">
+        <div className="max-w-250 mx-auto px-6 pb-20 mt-10">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
             {/* WRITTEN BY (AUTHOR) */}
-            <div className={`bg-card border border-border/60 rounded-2xl p-6 flex flex-col sm:flex-row items-center sm:items-start gap-5 shadow-sm ${!post.reviewer ? 'md:col-span-2 max-w-[800px] mx-auto' : ''}`}>
+            <div className={`bg-card border border-border/60 rounded-2xl p-6 flex flex-col sm:flex-row items-center sm:items-start gap-5 shadow-sm ${!post.reviewer ? 'md:col-span-2 max-w-200 mx-auto' : ''}`}>
               {post.author?.image ? (
                 <Link href={post.author.slug ? `/author/${post.author.slug}` : "#"} className="shrink-0">
                   <Image
@@ -617,11 +636,11 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
                     alt={post.author.name || "Publisher"}
                     width={80}
                     height={80}
-                    className="rounded-full object-cover w-[80px] h-[80px] border-2 border-border/50 bg-secondary shrink-0 hover:ring-4 hover:ring-primary/20 transition-all cursor-pointer"
+                    className="rounded-full object-cover w-20 h-20 border-2 border-border/50 bg-secondary shrink-0 hover:ring-4 hover:ring-primary/20 transition-all cursor-pointer"
                   />
                 </Link>
               ) : (
-                <div className="w-[80px] h-[80px] rounded-full border-2 border-border/50 bg-muted flex items-center justify-center shrink-0">
+                <div className="w-20 h-20 rounded-full border-2 border-border/50 bg-muted flex items-center justify-center shrink-0">
                   <Stethoscope className="h-8 w-8 text-muted-foreground mt-1" />
                 </div>
               )}
@@ -667,11 +686,11 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
                       alt={post.reviewer.name || "Reviewer"}
                       width={80}
                       height={80}
-                      className="rounded-full object-cover w-[80px] h-[80px] border-2 border-border/50 bg-secondary shrink-0 hover:ring-4 hover:ring-primary/20 transition-all cursor-pointer"
+                      className="rounded-full object-cover w-20 h-20 border-2 border-border/50 bg-secondary shrink-0 hover:ring-4 hover:ring-primary/20 transition-all cursor-pointer"
                     />
                   </Link>
                 ) : (
-                  <div className="w-[80px] h-[80px] rounded-full border-2 border-border/50 bg-muted flex items-center justify-center shrink-0">
+                  <div className="w-20 h-20 rounded-full border-2 border-border/50 bg-muted flex items-center justify-center shrink-0">
                     <Stethoscope className="h-8 w-8 text-muted-foreground mt-1" />
                   </div>
                 )}
@@ -709,7 +728,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
 
         {/* ─── READ NEXT ─── */}
         {recentArticles.length > 0 && (
-          <div id="read-next" className="max-w-[1200px] mx-auto px-6 pb-20 border-t border-border pt-16">
+          <div id="read-next" className="max-w-300 mx-auto px-6 pb-20 border-t border-border pt-16">
             <h2 className="text-2xl font-bold tracking-tight mb-8">Read Next</h2>
             <div className="grid gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
               {recentArticles.map((article: RecentArticleCard) => (

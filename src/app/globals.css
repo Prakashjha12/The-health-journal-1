@@ -128,6 +128,11 @@
 }
 
 @layer base {
+  html,
+  body {
+    max-width: 100vw;
+    overflow-x: clip;
+  }
   * {
     @apply border-border outline-ring/50;
   }
@@ -137,6 +142,31 @@
   ::selection {
     @apply bg-foreground/20 text-foreground;
   }
+
+  /* Prevent long unbroken strings, URLs, and links from overflowing horizontally */
+  p, a, li, blockquote, span {
+    overflow-wrap: anywhere;
+  }
+}
+
+/* ─── Prose & Link URL wrapping for mobile ─── */
+.prose {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.prose a,
+a {
+  overflow-wrap: anywhere;
+  word-break: break-all;
+}
+
+.prose li,
+.prose p,
+.prose span,
+.prose blockquote {
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 /* ─── Smooth category-switch animations ─── */

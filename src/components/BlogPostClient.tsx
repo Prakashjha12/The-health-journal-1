@@ -63,11 +63,24 @@ export function SocialShareSidebar({ title, className }: { title: string, classN
         },
     ]
 
+    const copyTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)
+
+    React.useEffect(() => {
+        return () => {
+            if (copyTimeoutRef.current) {
+                clearTimeout(copyTimeoutRef.current)
+            }
+        }
+    }, [])
+
     const handleCopy = async () => {
+        if (copyTimeoutRef.current) {
+            clearTimeout(copyTimeoutRef.current)
+        }
         try {
             await navigator.clipboard.writeText(currentUrl)
             setCopied(true)
-            setTimeout(() => setCopied(false), 2000)
+            copyTimeoutRef.current = setTimeout(() => setCopied(false), 2000)
         } catch {
             // fallback
             const textarea = document.createElement("textarea")
@@ -77,7 +90,7 @@ export function SocialShareSidebar({ title, className }: { title: string, classN
             document.execCommand("copy")
             document.body.removeChild(textarea)
             setCopied(true)
-            setTimeout(() => setCopied(false), 2000)
+            copyTimeoutRef.current = setTimeout(() => setCopied(false), 2000)
         }
     }
 

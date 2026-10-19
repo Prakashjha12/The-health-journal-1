@@ -81,7 +81,7 @@ export default async function Home({
   };
   const isConfigured = projectId !== 'placeholder' && dataset !== 'placeholder'
 
-  const [postsResponse, categoriesResponse, suggestionsResponse] = isConfigured
+  const [postsResponse, categoriesResponse, suggestionsResponse, bookmarkedArticleIds] = isConfigured
     ? await Promise.all([
       sanityFetch({
         query: searchPostsQuery,
@@ -93,8 +93,9 @@ export default async function Home({
       sanityFetch({
         query: publishedSuggestionsQuery,
       }),
+      getBookmarks(),
     ])
-    : [{ data: [] }, { data: { postCategories: [], allCategories: [] } }, { data: [] }]
+    : [{ data: [] }, { data: { postCategories: [], allCategories: [] } }, { data: [] }, []]
 
   const posts: Post[] = postsResponse.data
   const searchSuggestions: {
@@ -128,8 +129,6 @@ export default async function Home({
     }
   })
 
-  // Fetch bookmarks
-  const bookmarkedArticleIds: string[] = await getBookmarks()
   const featuredPost = posts[0] // The first post is the "Hero"
   const lcpImageUrl = featuredPost?.image
     ? urlFor(featuredPost.image).width(1000).quality(80).auto('format').url()

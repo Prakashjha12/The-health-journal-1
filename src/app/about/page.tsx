@@ -15,6 +15,8 @@ export const metadata: Metadata = {
     description: "Learn about The Health Journal's mission to provide evidence-based medical insights from Dr. Rajnandini Dubey.",
 }
 
+export const revalidate = 3600; // Revalidate the cache every 1 hour
+
 export default async function AboutPage() {
     // Fetch Dr. Rajnandini's official profile from Sanity
     const authorResponse = await sanityFetch({

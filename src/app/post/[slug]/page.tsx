@@ -1,4 +1,7 @@
+import { cache } from 'react'
 import { sanityFetch } from '../../../sanity/lib/live'
+import { client } from '../../../sanity/lib/client'
+import { groq } from 'next-sanity'
 import { postBySlugQuery, recentPostsQuery } from '../../../sanity/lib/queries'
 import { PortableText, type PortableTextComponents } from '@portabletext/react'
 import Image from 'next/image'
@@ -26,24 +29,40 @@ import {
 } from '@/components/ui/accordion'
 import { FormattedDate } from "@/components/ui/FormattedDate"
 import { Footer } from "@/components/Footer"
+
 export const revalidate = 3600; // Revalidate the cache every 1 hour (3600 seconds)
 
+// Pre-render all existing articles at build time so they load instantaneously
+export async function generateStaticParams() {
+  if (projectId === 'placeholder' || dataset === 'placeholder') return []
+  try {
+    const posts = await client.fetch<{ slug: string }[]>(
+      groq`*[_type == "post" && defined(slug.current)]{ "slug": slug.current }`
+    )
+    return (posts || []).map((post) => ({
+      slug: post.slug,
+    }))
+  } catch (error) {
+    console.error('Error generating static params for posts:', error)
+    return []
+  }
+}
 
+// React cache dedupes the fetch call between generateMetadata and PostPage
+const getPost = cache(async (slug: string) => {
+  const isConfigured = projectId !== 'placeholder' && dataset !== 'placeholder'
+  if (!isConfigured) return null
+  const postResponse = await sanityFetch({
+    query: postBySlugQuery,
+    params: { slug },
+    tags: ['posts', `post:${slug}`],
+  })
+  return postResponse?.data || null
+})
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params
-
-  // Fetch the post just for the metadata
-  // Next.js automatically dedupes this, so it won't slow down your app!
-  const isConfigured = projectId !== 'placeholder' && dataset !== 'placeholder'
-  const postResponse = isConfigured
-    ? await sanityFetch({
-      query: postBySlugQuery,
-      params: { slug },
-      tags: ['posts', `post:${slug}`],
-    })
-    : null
-  const post = postResponse?.data
+  const post = await getPost(slug)
 
   if (!post) {
     return { title: "Post Not Found | The Health Journal" }
@@ -166,15 +185,15 @@ const portableTextComponents: PortableTextComponents = {
 export default async function PostPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   const isConfigured = projectId !== 'placeholder' && dataset !== 'placeholder'
-  const postResponse = isConfigured
-    ? await sanityFetch({
-      query: postBySlugQuery,
-      params: { slug },
-      tags: ['posts', `post:${slug}`], // ✅ This matches the "Known Properties"
-    })
-    : null
-  const post = postResponse?.data || null
 
+  // Fetch post (deduped via React cache), recent articles, and bookmarks concurrently in parallel
+  const [post, recentPostsResponse, bookmarkedArticleIds] = await Promise.all([
+    getPost(slug),
+    isConfigured
+      ? sanityFetch({ query: recentPostsQuery, params: { slug } })
+      : Promise.resolve({ data: [] }),
+    getBookmarks(),
+  ])
 
   if (!post) {
     return (
@@ -190,7 +209,6 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
   }
 
   const readingTime = calculateReadingTime(post.body)
-  const bookmarkedArticleIds = await getBookmarks()
   const isBookmarked = bookmarkedArticleIds.includes(post._id)
 
   interface RecentArticleCard {
@@ -203,7 +221,6 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
     imageUrl: string | null;
   }
 
-  const recentPostsResponse = isConfigured ? await sanityFetch({ query: recentPostsQuery, params: { slug } }) : { data: [] }
   const recentPostsData = recentPostsResponse?.data || []
   const recentArticles: RecentArticleCard[] = recentPostsData.map((rp: {
     _id: string;

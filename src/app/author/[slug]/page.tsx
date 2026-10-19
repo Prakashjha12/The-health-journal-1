@@ -1,4 +1,7 @@
+import { cache } from 'react'
 import { sanityFetch } from '../../../sanity/lib/live'
+import { client } from '../../../sanity/lib/client'
+import { groq } from 'next-sanity'
 import { authorBySlugQuery } from '../../../sanity/lib/queries'
 import { PortableText } from '@portabletext/react'
 import Image from 'next/image'
@@ -14,10 +17,35 @@ import { Metadata } from 'next'
 import { Copyright } from "@/components/ui/Copyright"
 import { FormattedDate } from "@/components/ui/FormattedDate"
 
+export const revalidate = 3600; // Revalidate the cache every 1 hour
+
+// Pre-render authors at build time for instant loading
+export async function generateStaticParams() {
+  if (projectId === 'placeholder' || dataset === 'placeholder') return []
+  try {
+    const authors = await client.fetch<{ slug: string }[]>(
+      groq`*[_type == "author" && defined(slug.current)]{ "slug": slug.current }`
+    )
+    return (authors || []).map((author) => ({
+      slug: author.slug,
+    }))
+  } catch (error) {
+    console.error('Error generating static params for authors:', error)
+    return []
+  }
+}
+
+// React cache dedupes the fetch call between generateMetadata and AuthorPage
+const getAuthor = cache(async (slug: string) => {
+  const isConfigured = projectId !== 'placeholder' && dataset !== 'placeholder'
+  if (!isConfigured) return null
+  const authorResponse = await sanityFetch({ query: authorBySlugQuery, params: { slug } })
+  return authorResponse?.data || null
+})
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const authorResponse = await sanityFetch({ query: authorBySlugQuery, params: { slug } });
-  const author = authorResponse?.data;
+  const author = await getAuthor(slug);
 
   if (!author) return { title: "Author Not Found" };
 
@@ -34,12 +62,14 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   };
 }
 
-
 export default async function AuthorPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
-  const isConfigured = projectId !== 'placeholder' && dataset !== 'placeholder'
-  const authorResponse = isConfigured ? await sanityFetch({ query: authorBySlugQuery, params: { slug } }) : null
-  const author = authorResponse?.data || null
+
+  // Fetch author (deduped via React cache) and bookmarks in parallel
+  const [author, bookmarkedArticleIds] = await Promise.all([
+    getAuthor(slug),
+    getBookmarks(),
+  ])
 
   if (!author) {
     return (
@@ -53,8 +83,6 @@ export default async function AuthorPage({ params }: { params: Promise<{ slug: s
       </div>
     )
   }
-
-  const bookmarkedArticleIds = await getBookmarks()
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">

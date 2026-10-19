@@ -19,7 +19,8 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
-  display: 'swap', // Ensures code blocks/mono text don't block render
+  display: 'swap',
+  preload: false,
 });
 export const metadata: Metadata = {
   metadataBase: new URL("https://thehealthjournal.in"),
@@ -65,7 +66,7 @@ export default function RootLayout({
       <html lang="en" suppressHydrationWarning>
         <body
           suppressHydrationWarning
-          className={`${geistSans.variable} ${geistMono.variable} antialiased bg-zinc-50 dark:bg-black text-zinc-900 dark:text-zinc-50 min-h-screen flex flex-col overflow-x-clip max-w-full`}
+          className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased bg-zinc-50 dark:bg-black text-zinc-900 dark:text-zinc-50 min-h-screen flex flex-col overflow-x-clip max-w-full`}
         >
           <ThemeProvider
             attribute="class"

@@ -3,7 +3,6 @@
 import * as React from "react"
 import { ReactLenis, type LenisRef } from "lenis/react"
 import gsap from "gsap"
-import "lenis/dist/lenis.css"
 
 interface SmoothScrollProviderProps {
     children: React.ReactNode

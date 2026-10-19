@@ -516,8 +516,8 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
                   width={1200}
                   height={600}
                   className="w-full h-auto object-cover max-h-125"
-                  // ─── CRITICAL FOR LCP ───
-                  priority
+                  // ─── HIGH PRIORITY EAGER LOAD WITHOUT MISMATCHED PRELOAD TAG ───
+                  loading="eager"
                   fetchPriority="high"
                   sizes="(max-width: 768px) 100vw, 1200px"
                 />

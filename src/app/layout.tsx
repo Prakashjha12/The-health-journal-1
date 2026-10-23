@@ -30,7 +30,15 @@ export const metadata: Metadata = {
   },
   description: "Your trusted source for evidence-based medical insights, wellness guides, and expert healthcare research simplified by medical professionals.",
   icons: {
-    icon: "/fevicon.svg", // Double check if it's spelled 'favicon' or 'fevicon' in your public folder!
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/fevicon.svg", type: "image/svg+xml" },
+    ],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+    shortcut: "/favicon.ico",
   },
   keywords: ["medical journal", "health tips", "wellness guides", "evidence-based health", "Dr. Rajnandini Dubey", "Dr. Komal"],
   openGraph: {

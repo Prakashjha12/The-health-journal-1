@@ -44,11 +44,18 @@ export async function GET() {
     })
     .join('\n')
 
-  const markdown = `# The Health Journal — Full Machine-Readable Knowledge Base
+  const markdown = `# The Health Journal - Full Article Catalog
+> Complete directory of published evidence-based medical and health articles for AI consumption.
 
-Website: https://thehealthjournal.in
-Chief Medical Editor: Dr. Rajnandini Dubey (MPT Sports)
-Location: India (Global reach)
+## Machine-Readable Resources
+- [Summary Index](https://thehealthjournal.in/llms.txt): Top-level overview and curated key articles.
+- [XML Sitemap](https://thehealthjournal.in/sitemap.xml): Complete XML sitemap of all URLs.
+- [WebMCP Search Tool](https://thehealthjournal.in/api/tools/search?query=health): Search articles via structured JSON API.
+
+## Editorial Metadata
+- Website: https://thehealthjournal.in
+- Chief Medical Editor: Dr. Rajnandini Dubey (MPT Sports)
+- Location: India (Global reach)
 
 ---
 

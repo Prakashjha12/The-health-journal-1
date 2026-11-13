@@ -449,9 +449,11 @@ export default function MedicalBlogUI({
                                         id="search-articles-input"
                                         name="query"
                                         type="text"
+                                        role="combobox"
+                                        aria-haspopup="listbox"
                                         placeholder="Search articles..."
                                         aria-label="Search articles by condition, topic, or keyword"
-                                        aria-controls="search-suggestions-list"
+                                        aria-controls={isSuggestionsOpen && suggestions.length > 0 ? "search-suggestions-list" : undefined}
                                         className="h-12 rounded-r-none border-r-0 bg-card text-base focus-visible:ring-1 transition-all pr-8"
                                         value={searchQuery}
                                         onChange={(e) => {

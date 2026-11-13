@@ -18,7 +18,8 @@ const isPublicRoute = createRouteMatcher([
   "/sign-up(.*)",  
   "/studio(.*)",
   "/api/revalidate-sanity(.*)",
-  "/api/markdown-post(.*)" 
+  "/api/markdown-post(.*)",
+  "/api/tools(.*)"
 ])
 
 const isDashboardRoute = createRouteMatcher(["/dashboard(.*)"])

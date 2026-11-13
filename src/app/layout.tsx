@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { ClerkProvider } from "@clerk/nextjs";
 import { SanityLive } from "@/sanity/lib/live";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import { WebMCPProvider } from "@/components/WebMCPProvider";
 import { SmoothScrollProvider } from "@/components/SmoothScrollProvider";
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
@@ -72,6 +73,14 @@ export default function RootLayout({
   return (
     <ClerkProvider afterSignOutUrl="/">
       <html lang="en" suppressHydrationWarning>
+        <head>
+          {process.env.NEXT_PUBLIC_WEBMCP_ORIGIN_TRIAL_TOKEN && (
+            <meta
+              httpEquiv="origin-trial"
+              content={process.env.NEXT_PUBLIC_WEBMCP_ORIGIN_TRIAL_TOKEN}
+            />
+          )}
+        </head>
         <body
           suppressHydrationWarning
           className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased bg-zinc-50 dark:bg-black text-zinc-900 dark:text-zinc-50 min-h-screen flex flex-col overflow-x-clip max-w-full`}
@@ -83,6 +92,7 @@ export default function RootLayout({
           >
             <SmoothScrollProvider>
               <ScrollToTop />
+              <WebMCPProvider />
               {children}
               <SanityLive />
               <Analytics />

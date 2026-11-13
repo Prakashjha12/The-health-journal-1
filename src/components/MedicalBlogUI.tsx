@@ -432,7 +432,18 @@ export default function MedicalBlogUI({
 
                         {/* Search Bar with Live Suggestions Dropdown */}
                         <div ref={searchContainerRef} className="gsap-hero-search relative max-w-125 mb-5 z-40">
-                            <form onSubmit={handleSearch} role="search" aria-label="Search medical articles" className="flex items-center gap-0 w-full relative">
+                            <form
+                                onSubmit={handleSearch}
+                                action="/api/tools/search"
+                                method="GET"
+                                role="search"
+                                aria-label="Search medical articles"
+                                className="flex items-center gap-0 w-full relative"
+                                {...{
+                                    toolname: "search_articles",
+                                    tooldescription: "Search The Health Journal for evidence-based medical articles by symptom, diagnosis, or health topic",
+                                }}
+                            >
                                 <div className="relative flex-1">
                                     <Input
                                         id="search-articles-input"
@@ -457,6 +468,9 @@ export default function MedicalBlogUI({
                                         autoComplete="off"
                                         aria-autocomplete="list"
                                         aria-expanded={isSuggestionsOpen && suggestions.length > 0}
+                                        {...{
+                                            "toolparam-description": "Keywords, disease names, symptoms, or health topics to search for",
+                                        }}
                                     />
                                     {searchQuery && (
                                         <button

@@ -100,6 +100,7 @@ export function SocialShareSidebar({ title, className }: { title: string, classN
                 <button
                     key={link.id}
                     onClick={() => window.open(link.href, "_blank", "noopener,noreferrer")}
+                    aria-label={`Share article on ${link.label}`}
                     className="flex items-center justify-center h-10 w-10 cursor-pointer rounded-full border border-border bg-card text-muted-foreground hover:text-foreground hover:border-foreground/30 hover:bg-muted transition-all duration-200"
                 >
                     <span className="sr-only">Share via {link.label}</span>
@@ -108,6 +109,7 @@ export function SocialShareSidebar({ title, className }: { title: string, classN
             ))}
             <button
                 onClick={handleCopy}
+                aria-label={copied ? "Link copied to clipboard" : "Copy article link"}
                 title={copied ? "Copied!" : "Copy link"}
                 className="flex items-center justify-center h-10 w-10 rounded-full border border-border bg-card text-muted-foreground hover:text-foreground hover:border-foreground/30 hover:bg-muted transition-all duration-200 cursor-pointer"
             >
@@ -121,6 +123,7 @@ export function BackButton() {
     return (
         <Link
             href="/"
+            aria-label="Return to all articles"
             className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors group"
         >
             <ArrowLeft size={16} className="group-hover:-translate-x-0.5 transition-transform" />

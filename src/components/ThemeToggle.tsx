@@ -76,6 +76,7 @@ export function ThemeToggle({
         <button
             ref={buttonRef}
             onClick={toggleTheme}
+            aria-label="Toggle dark and light theme"
             className={cn(
                 "relative inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors cursor-pointer",
                 className

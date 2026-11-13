@@ -432,11 +432,15 @@ export default function MedicalBlogUI({
 
                         {/* Search Bar with Live Suggestions Dropdown */}
                         <div ref={searchContainerRef} className="gsap-hero-search relative max-w-125 mb-5 z-40">
-                            <form onSubmit={handleSearch} className="flex items-center gap-0 w-full relative">
+                            <form onSubmit={handleSearch} role="search" aria-label="Search medical articles" className="flex items-center gap-0 w-full relative">
                                 <div className="relative flex-1">
                                     <Input
+                                        id="search-articles-input"
+                                        name="query"
                                         type="text"
                                         placeholder="Search articles..."
+                                        aria-label="Search articles by condition, topic, or keyword"
+                                        aria-controls="search-suggestions-list"
                                         className="h-12 rounded-r-none border-r-0 bg-card text-base focus-visible:ring-1 transition-all pr-8"
                                         value={searchQuery}
                                         onChange={(e) => {
@@ -483,13 +487,13 @@ export default function MedicalBlogUI({
                                     </div>
 
                                     {suggestions.length > 0 ? (
-                                        <ul className="max-h-75 overflow-y-auto divide-y divide-border/30">
+                                        <ul id="search-suggestions-list" role="listbox" aria-label="Search suggestions" className="max-h-75 overflow-y-auto divide-y divide-border/30">
                                             {suggestions.map((item, idx) => {
                                                 const categoryTitle = item.categories && item.categories.length > 0 ? item.categories[0].title : null
                                                 const isHighlighted = idx === highlightedIndex
 
                                                 return (
-                                                    <li key={item._id}>
+                                                    <li key={item._id} role="option" aria-selected={isHighlighted}>
                                                         <Link
                                                             href={`/post/${item.slug}`}
                                                             onClick={() => {
@@ -552,6 +556,8 @@ export default function MedicalBlogUI({
                             {/* Scrollable Categories List */}
                             <div
                                 ref={categoryScrollRef}
+                                role="tablist"
+                                aria-label="Article categories"
                                 onScroll={checkScrollability}
                                 className="flex items-center gap-2.5 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden scroll-smooth flex-nowrap flex-1 min-w-0"
                             >
@@ -561,6 +567,9 @@ export default function MedicalBlogUI({
                                         <button
                                             key={cat}
                                             ref={isActive ? activeCategoryRef : null}
+                                            role="tab"
+                                            aria-selected={isActive}
+                                            aria-controls="articles"
                                             onClick={() => handleCategoryChange(cat)}
                                             className={cn(
                                                 "px-5 py-2 rounded-full text-sm font-medium border transition-all shrink-0 whitespace-nowrap cursor-pointer",

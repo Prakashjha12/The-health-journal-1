@@ -47,7 +47,7 @@ export function Navbar() {
                     </Link>
                 </div>
 
-                <nav className="hidden md:flex items-center absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 gap-5">
+                <nav aria-label="Main navigation" className="hidden md:flex items-center absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 gap-5">
                     {menuItems.map((item, index) => (
                         <Link
                             key={index}
@@ -120,7 +120,13 @@ export function Navbar() {
 
                 <div className="flex md:hidden items-center gap-1">
                     <ThemeToggle />
-                    <button className="p-2" onClick={toggleMenu} aria-label="Toggle menu">
+                    <button
+                        className="p-2 cursor-pointer"
+                        onClick={toggleMenu}
+                        aria-label={isMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+                        aria-expanded={isMenuOpen}
+                        aria-controls="mobile-navigation-menu"
+                    >
                         {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
                     </button>
                 </div>
@@ -129,7 +135,7 @@ export function Navbar() {
             {/* Mobile Menu */}
             {isMenuOpen && (
                 <div className="md:hidden border-t border-border bg-background">
-                    <nav className="flex flex-col divide-y divide-border/50">
+                    <nav id="mobile-navigation-menu" aria-label="Mobile navigation" className="flex flex-col divide-y divide-border/50">
                         {menuItems.map((item, index) => (
                             <Link
                                 key={index}

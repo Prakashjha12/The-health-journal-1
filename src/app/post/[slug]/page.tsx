@@ -76,6 +76,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     keywords: post.tags?.join(', ') || 'health, wellness, physio',
     alternates: {
       canonical: `https://thehealthjournal.in/post/${slug}`,
+      types: {
+        'text/markdown': `https://thehealthjournal.in/post/${slug}.md`,
+      },
     },
     openGraph: {
       title: post.title,

@@ -3,16 +3,20 @@
 import * as React from "react"
 import { ReactLenis, type LenisRef } from "lenis/react"
 import gsap from "gsap"
+import { usePathname } from "next/navigation"
 
 interface SmoothScrollProviderProps {
     children: React.ReactNode
 }
 
 export function SmoothScrollProvider({ children }: SmoothScrollProviderProps) {
+    const pathname = usePathname()
+    const isStudio = pathname?.startsWith('/studio')
     const lenisRef = React.useRef<LenisRef>(null)
 
     React.useEffect(() => {
-        // Synchronize Lenis raf loop with GSAP's optimized ticker
+        if (isStudio) return
+
         function update(time: number) {
             lenisRef.current?.lenis?.raf(time * 1000)
         }
@@ -23,7 +27,11 @@ export function SmoothScrollProvider({ children }: SmoothScrollProviderProps) {
         return () => {
             gsap.ticker.remove(update)
         }
-    }, [])
+    }, [isStudio])
+
+    if (isStudio) {
+        return <>{children}</>
+    }
 
     return (
         <ReactLenis
@@ -34,7 +42,7 @@ export function SmoothScrollProvider({ children }: SmoothScrollProviderProps) {
                 duration: 1.15,
                 easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
                 smoothWheel: true,
-                syncTouch: false, // Preserves natural responsive mobile touch momentum
+                syncTouch: false,
                 allowNestedScroll: true,
                 anchors: true,
             }}
@@ -43,3 +51,4 @@ export function SmoothScrollProvider({ children }: SmoothScrollProviderProps) {
         </ReactLenis>
     )
 }
+

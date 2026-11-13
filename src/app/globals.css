@@ -156,10 +156,13 @@
   word-break: break-word;
 }
 
-.prose a,
+.prose a {
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
 a {
   overflow-wrap: anywhere;
-  word-break: break-all;
 }
 
 .prose li,

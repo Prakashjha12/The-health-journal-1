@@ -6,14 +6,14 @@ export default function robots(): MetadataRoute.Robots {
   return {
     rules: {
       userAgent: '*',
-      allow: '/',
+      allow: ['/', '/llms.txt', '/llms-full.txt'],
       disallow: [
-        '/studio/',       // Sanity Studio
-        '/api/',          // Internal API routes
-        '/sign-in',       // Clerk Sign-in page
-        '/sign-up',       // Clerk Sign-up page
-        '/user-profile',  // Clerk User Profile
-        '/_clerk',        // Internal Clerk routes
+        '/studio/',
+        '/api/',
+        '/sign-in',
+        '/sign-up',
+        '/dashboard/',
+        '/_clerk',
       ],
     },
     sitemap: `${baseUrl}/sitemap.xml`,

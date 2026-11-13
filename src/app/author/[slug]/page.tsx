@@ -9,7 +9,6 @@ import { urlFor } from '../../../sanity/lib/image'
 import Link from 'next/link'
 import { Stethoscope, Globe, Twitter, Instagram, Linkedin, Briefcase, Award, Clock } from 'lucide-react'
 import { Navbar } from '@/components/Navbar'
-import { calculateReadingTime } from '@/lib/utils'
 import { BookmarkButton } from '@/components/BookmarkButton'
 import { dataset, projectId } from '@/sanity/env'
 import { Metadata } from 'next'
@@ -205,14 +204,16 @@ export default async function AuthorPage({ params }: { params: Promise<{ slug: s
               {author.posts.map((post: {
                 _id: string;
                 title: string;
+                summary?: string;
                 slug: string;
                 publishedAt?: string;
                 _createdAt?: string;
                 categories?: { title: string }[];
                 image?: Parameters<typeof urlFor>[0] | null;
+                wordCount?: number;
                 body?: unknown[];
               }) => {
-                const readTimeVal = calculateReadingTime(post.body)
+                const readTimeVal = post.wordCount ? Math.max(1, Math.ceil(post.wordCount / 200)) : 1
                 const displayDate = post.publishedAt || post._createdAt || "2024-01-01"
                 const category = post.categories && post.categories.length > 0 && post.categories[0].title
                   ? post.categories[0].title

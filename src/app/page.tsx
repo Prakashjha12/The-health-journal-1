@@ -6,6 +6,7 @@ import { urlFor } from '@/sanity/lib/image'
 interface Post {
   _id: string;
   title: string;
+  summary?: string;
   slug: {
     current: string;
   };
@@ -20,6 +21,7 @@ interface Post {
     };
   } | null;
   body?: unknown[];
+  wordCount?: number;
 }
 
 import { dataset, projectId } from '@/sanity/env'

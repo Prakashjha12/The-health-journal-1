@@ -71,6 +71,7 @@ export const postBySlugQuery = groq`*[_type == "post" && slug.current == $slug][
 export const recentPostsQuery = groq`*[_type == "post" && defined(slug.current) && slug.current != $slug] | order(publishedAt desc)[0...3] {
   _id,
   title,
+  summary,
   slug,
   publishedAt,
   _createdAt,
@@ -80,7 +81,7 @@ export const recentPostsQuery = groq`*[_type == "post" && defined(slug.current) 
     name,
     image
   },
-  body
+  "wordCount": count(string::split(pt::text(body), " "))
 }`
 
 export const searchPostsQuery = groq`*[_type == "post" && defined(slug.current) && 
@@ -89,12 +90,13 @@ export const searchPostsQuery = groq`*[_type == "post" && defined(slug.current) 
 ] | order(publishedAt desc) {
   _id,
   title,
+  summary,
   slug,
   publishedAt,
   _createdAt,
   image,
   categories[]->{ title },
-  body
+  "wordCount": count(string::split(pt::text(body), " "))
 }`
 
 export const categoriesQuery = groq`{
@@ -122,12 +124,13 @@ export const authorBySlugQuery = groq`*[_type == "author" && slug.current == $sl
   "posts": *[_type == "post" && references(^._id)] | order(publishedAt desc) {
     _id,
     title,
+    summary,
     "slug": slug.current,
     publishedAt,
     _createdAt,
     image,
     categories[]->{ title },
-    body
+    "wordCount": count(string::split(pt::text(body), " "))
   }
 }`
 

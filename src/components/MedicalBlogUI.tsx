@@ -24,6 +24,7 @@ gsap.registerPlugin(useGSAP)
 interface SanityPost {
     _id: string
     title: string
+    summary?: string
     slug: { current: string }
     publishedAt?: string
     _createdAt?: string
@@ -36,6 +37,7 @@ interface SanityPost {
     } | null
     categories?: { title: string }[]
     body?: unknown[]
+    wordCount?: number
 }
 
 const POSTS_PER_PAGE = 6
@@ -372,7 +374,7 @@ export default function MedicalBlogUI({
     const mappedArticles = React.useMemo(() =>
         posts.map((post) => {
             const displayDate = post.publishedAt || post._createdAt || "2024-01-01"
-            const readingTime = calculateReadingTime(post.body)
+            const readingTime = post.wordCount ? Math.max(1, Math.ceil(post.wordCount / 200)) : (post.body ? calculateReadingTime(post.body) : 1)
             const postCategory = post.categories && post.categories.length > 0 && post.categories[0].title
                 ? post.categories[0].title
                 : "Health"
@@ -381,7 +383,7 @@ export default function MedicalBlogUI({
                 id: post._id,
                 title: post.title,
                 slug: post.slug?.current || '#',
-                excerpt: "Read this full article in our Medical Insights portal.",
+                excerpt: post.summary || "Explore evidence-based health research and wellness insights.",
                 category: postCategory,
                 readTime: `${readingTime} min read`,
                 date: displayDate,

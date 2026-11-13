@@ -114,14 +114,12 @@ export default function MedicalBlogUI({
     posts,
     allCategories = [],
     searchSuggestions = [],
-    bookmarkedArticleIds = [],
     initialQuery = "",
     initialCategory = "All"
 }: {
     posts: SanityPost[],
     allCategories?: string[],
     searchSuggestions?: SearchSuggestion[],
-    bookmarkedArticleIds?: string[],
     initialQuery?: string,
     initialCategory?: string
 }) {
@@ -666,7 +664,6 @@ export default function MedicalBlogUI({
                                                             <div className="absolute top-3 right-3 z-10">
                                                                 <BookmarkButton
                                                                     articleId={featured.id}
-                                                                    initialIsBookmarked={bookmarkedArticleIds.includes(featured.id)}
                                                                 />
                                                             </div>
                                                             <div className="absolute inset-x-0 -bottom-px h-32 bg-linear-to-t from-card via-card/70 to-transparent z-10 pointer-events-none" />
@@ -728,7 +725,6 @@ export default function MedicalBlogUI({
                                                                                 </span>
                                                                                 <BookmarkButton
                                                                                     articleId={article.id}
-                                                                                    initialIsBookmarked={bookmarkedArticleIds.includes(article.id)}
                                                                                 />
                                                                             </div>
                                                                         </div>

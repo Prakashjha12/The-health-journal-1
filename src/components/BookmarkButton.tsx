@@ -4,7 +4,7 @@ import * as React from "react"
 import { Bookmark } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { toggleBookmark } from "@/lib/actions/user.actions"
-import { useAuth } from "@clerk/nextjs"
+import { useAuth, useUser } from "@clerk/nextjs"
 import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import confetti from "canvas-confetti"
@@ -16,10 +16,21 @@ interface BookmarkButtonProps {
     children?: React.ReactNode
 }
 
-export function BookmarkButton({ articleId, initialIsBookmarked = false, className, children }: BookmarkButtonProps) {
+export function BookmarkButton({ articleId, initialIsBookmarked, className, children }: BookmarkButtonProps) {
     const { isLoaded, isSignedIn } = useAuth()
+    const { user } = useUser()
     const router = useRouter()
-    const [isBookmarked, setIsBookmarked] = React.useState(initialIsBookmarked)
+
+    const bookmarks = user?.publicMetadata?.bookmarks
+    const userBookmarks = React.useMemo(() => {
+        return Array.isArray(bookmarks) ? (bookmarks as string[]) : []
+    }, [bookmarks])
+
+    const serverOrClientState = initialIsBookmarked !== undefined
+        ? initialIsBookmarked
+        : userBookmarks.includes(articleId)
+
+    const [isBookmarked, setIsBookmarked] = React.useState(serverOrClientState)
     const [isPending, startTransition] = React.useTransition()
 
     const isMountedRef = React.useRef(true)
@@ -32,8 +43,12 @@ export function BookmarkButton({ articleId, initialIsBookmarked = false, classNa
     }, [])
 
     React.useEffect(() => {
-        setIsBookmarked(initialIsBookmarked)
-    }, [initialIsBookmarked])
+        if (initialIsBookmarked !== undefined) {
+            setIsBookmarked(initialIsBookmarked)
+        } else if (userBookmarks.length > 0) {
+            setIsBookmarked(userBookmarks.includes(articleId))
+        }
+    }, [userBookmarks, articleId, initialIsBookmarked])
 
     const handleBookmark = (e: React.MouseEvent) => {
         e.preventDefault()

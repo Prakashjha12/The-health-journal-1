@@ -11,7 +11,6 @@ import { Stethoscope, Globe, Twitter, Instagram, Linkedin, Briefcase, Award, Clo
 import { Navbar } from '@/components/Navbar'
 import { calculateReadingTime } from '@/lib/utils'
 import { BookmarkButton } from '@/components/BookmarkButton'
-import { getBookmarks } from '@/lib/actions/user.actions'
 import { dataset, projectId } from '@/sanity/env'
 import { Metadata } from 'next'
 import { Copyright } from "@/components/ui/Copyright"
@@ -65,11 +64,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 export default async function AuthorPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
 
-  // Fetch author (deduped via React cache) and bookmarks in parallel
-  const [author, bookmarkedArticleIds] = await Promise.all([
-    getAuthor(slug),
-    getBookmarks(),
-  ])
+  // Fetch author (deduped via React cache)
+  const author = await getAuthor(slug)
 
   if (!author) {
     return (
@@ -248,7 +244,6 @@ export default async function AuthorPage({ params }: { params: Promise<{ slug: s
                           </span>
                           <BookmarkButton
                             articleId={post._id}
-                            initialIsBookmarked={bookmarkedArticleIds.includes(post._id)}
                           />
                         </div>
                       </div>

@@ -17,7 +17,6 @@ import {
 } from '@/components/BlogPostClient'
 import { ScrollProgress, type ScrollProgressSection } from '@/components/ui/scroll-progress'
 import { BookmarkButton } from '@/components/BookmarkButton'
-import { getBookmarks } from '@/lib/actions/user.actions'
 import { ArticleAnimations } from '@/components/ArticleAnimations'
 import { Metadata } from 'next'
 import { dataset, projectId } from '@/sanity/env'
@@ -186,13 +185,12 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
   const { slug } = await params
   const isConfigured = projectId !== 'placeholder' && dataset !== 'placeholder'
 
-  // Fetch post (deduped via React cache), recent articles, and bookmarks concurrently in parallel
-  const [post, recentPostsResponse, bookmarkedArticleIds] = await Promise.all([
+  // Fetch post (deduped via React cache) and recent articles concurrently in parallel
+  const [post, recentPostsResponse] = await Promise.all([
     getPost(slug),
     isConfigured
       ? sanityFetch({ query: recentPostsQuery, params: { slug } })
       : Promise.resolve({ data: [] }),
-    getBookmarks(),
   ])
 
   if (!post) {
@@ -209,7 +207,6 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
   }
 
   const readingTime = calculateReadingTime(post.body)
-  const isBookmarked = bookmarkedArticleIds.includes(post._id)
 
   interface RecentArticleCard {
     id: string;
@@ -514,9 +511,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
                 </div>
 
                 <div className="shrink-0 md:absolute md:right-6 md:mt-0">
-                  <BookmarkButton articleId={post._id} initialIsBookmarked={isBookmarked} className="rounded-md px-4 py-2 w-auto gap-2 border">
-                    <span className="text-sm font-medium">{isBookmarked ? "Saved" : "Save article"}</span>
-                  </BookmarkButton>
+                  <BookmarkButton articleId={post._id} />
                 </div>
               </div>
             </div>
@@ -774,7 +769,6 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
                         </span>
                         <BookmarkButton
                           articleId={article.id}
-                          initialIsBookmarked={bookmarkedArticleIds.includes(article.id)}
                         />
                       </div>
                     </div>

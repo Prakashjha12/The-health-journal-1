@@ -1,7 +1,6 @@
 import { sanityFetch } from '@/sanity/lib/live'
 import { categoriesQuery, publishedSuggestionsQuery, searchPostsQuery } from '@/sanity/lib/queries'
 import MedicalBlogUI from '@/components/MedicalBlogUI'
-import { getBookmarks } from '@/lib/actions/user.actions'
 import { urlFor } from '@/sanity/lib/image'
 
 interface Post {
@@ -81,7 +80,7 @@ export default async function Home({
   };
   const isConfigured = projectId !== 'placeholder' && dataset !== 'placeholder'
 
-  const [postsResponse, categoriesResponse, suggestionsResponse, bookmarkedArticleIds] = isConfigured
+  const [postsResponse, categoriesResponse, suggestionsResponse] = isConfigured
     ? await Promise.all([
       sanityFetch({
         query: searchPostsQuery,
@@ -93,9 +92,8 @@ export default async function Home({
       sanityFetch({
         query: publishedSuggestionsQuery,
       }),
-      getBookmarks(),
     ])
-    : [{ data: [] }, { data: { postCategories: [], allCategories: [] } }, { data: [] }, []]
+    : [{ data: [] }, { data: { postCategories: [], allCategories: [] } }, { data: [] }]
 
   const posts: Post[] = postsResponse.data
   const searchSuggestions: {
@@ -159,7 +157,6 @@ export default async function Home({
         posts={posts}
         allCategories={allCategories}
         searchSuggestions={searchSuggestions}
-        bookmarkedArticleIds={bookmarkedArticleIds}
         initialQuery={query}
         initialCategory={category}
       />
